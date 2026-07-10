@@ -1,0 +1,27 @@
+import Link from "next/link";
+import { FileText } from "lucide-react";
+import { SitePage } from "@/components/site-chrome";
+import { notices } from "@/lib/content";
+import { slugify } from "@/lib/slug";
+
+export default function NoticesPage() {
+  return (
+    <SitePage title="सूचना तथा जानकारी">
+      <div className="grid gap-4">
+        {notices.map((notice) => (
+          <Link key={notice.title} href={`/notices/${slugify(notice.title)}`} className="civic-card flex gap-4 p-5 hover:border-[var(--civic-blue)]">
+            <FileText className="mt-1 shrink-0 text-[var(--civic-red)]" />
+            <div>
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="rounded bg-[var(--civic-red)] px-2 py-1 font-bold text-white">{notice.category}</span>
+                <span className="font-semibold text-slate-500">{notice.date}</span>
+              </div>
+              <h2 className="mt-2 text-lg font-extrabold text-[var(--civic-navy)]">{notice.title}</h2>
+              <p className="mt-1 text-slate-600">{notice.body}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </SitePage>
+  );
+}

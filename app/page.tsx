@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 import {
   Activity,
   Bell,
@@ -22,27 +23,31 @@ import {
   citizenCharter,
   downloads,
   emergencyContacts,
+  galleryItems,
   institutions,
   notices,
-  programs
+  programs,
+  reportItems
 } from "@/lib/content";
+import { slugify } from "@/lib/slug";
 
 const navItems = [
-  "गृहपृष्ठ",
-  "हाम्रो बारेमा",
-  "स्वास्थ्य संस्था",
-  "कार्यक्रम तथा सेवा",
-  "सूचना प्रकाशन",
-  "तथ्यांक",
-  "डाउनलोड",
-  "गुनासो",
-  "सम्पर्क"
+  { label: "गृहपृष्ठ", href: "#home" },
+  { label: "परिचय", href: "#about" },
+  { label: "कर्मचारी", href: "#chief" },
+  { label: "स्वास्थ्य संस्था", href: "#institutions" },
+  { label: "सूचना", href: "#notices" },
+  { label: "कार्यक्रम", href: "#programs" },
+  { label: "डाउनलोड", href: "#downloads" },
+  { label: "आकस्मिक सम्पर्क", href: "#emergency" },
+  { label: "गुनासो", href: "#grievance-form" },
+  { label: "अपोइन्टमेन्ट", href: "#appointment-form" },
+  { label: "सम्पर्क", href: "#contact" }
 ];
 
 export default function HomePage() {
   return (
     <main>
-      <TopStrip />
       <Header />
       <NavBar />
       <Hero />
@@ -60,41 +65,19 @@ export default function HomePage() {
   );
 }
 
-function TopStrip() {
-  return (
-    <div className="bg-[var(--civic-red)] text-white">
-      <div className="container-civic flex flex-wrap items-center justify-between gap-3 py-2 text-sm">
-        <div className="flex flex-wrap gap-4">
-          <span className="inline-flex items-center gap-2"><Phone size={15} /> {branchContact.phone}</span>
-          <span className="inline-flex items-center gap-2"><Mail size={15} /> {branchContact.email}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span>नेपाली | English</span>
-          <Image src="/np_flag.gif" alt="Nepal flag" width={28} height={38} className="h-9 w-auto" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Header() {
   return (
-    <header className="bg-white">
-      <div className="container-civic flex items-center justify-between gap-4 py-5">
-        <div className="flex items-center gap-4">
-          <Image src="/emblem.png" alt="Rautamai emblem" width={86} height={72} className="h-20 w-auto" priority />
-          <div>
-            <p className="text-sm font-bold text-[var(--civic-red)]">रौतामाई गाउँपालिका</p>
-            <h1 className="text-2xl font-extrabold leading-tight text-[var(--civic-navy)] md:text-4xl">
-              स्वास्थ्य शाखा
-            </h1>
-            <p className="mt-1 text-sm font-semibold text-slate-600">गाउँ कार्यपालिकाको कार्यालय | स्वास्थ्य सेवा सूचना प्रणाली</p>
-          </div>
+    <header className="identity-header bg-white">
+      <div className="identity-grid">
+        <Image src="/emblem.png" alt="नगरपालिका चिन्ह" width={112} height={98} className="identity-logo" priority />
+        <div className="identity-title">
+          <h1>{branchContact.municipality}</h1>
+          <p className="identity-office">{branchContact.office}</p>
+          <p className="identity-location">{branchContact.provinceLine}</p>
+          <p className="identity-slogan">&quot;{branchContact.slogan}&quot;</p>
         </div>
-        <div className="hidden text-right md:block">
-          <p className="font-bold text-[var(--civic-navy)]">{branchContact.chiefTitle}</p>
-          <p>{branchContact.chief}</p>
-          <p className="text-sm text-slate-600">{branchContact.email}</p>
+        <div className="identity-flag">
+          <Image src="/np_flag.gif" alt="Nepal flag" width={96} height={116} className="nepal-flag" priority />
         </div>
       </div>
     </header>
@@ -103,20 +86,24 @@ function Header() {
 
 function NavBar() {
   return (
-    <nav className="sticky top-0 z-30 bg-[var(--civic-blue)] text-white shadow-lg">
+    <nav className="sticky top-0 z-30 bg-[var(--civic-blue)] text-white shadow-md">
       <div className="container-civic flex items-center justify-between">
-        <div className="hidden flex-wrap md:flex">
+        <div className="hidden min-w-0 flex-1 items-center overflow-x-auto md:flex">
           {navItems.map((item) => (
-            <a key={item} href={`#${item}`} className="border-r border-white/15 px-4 py-3 text-sm font-bold hover:bg-[var(--civic-red)]">
-              {item}
+            <a
+              key={item.label}
+              href={item.href}
+              className="inline-flex h-14 items-center gap-1 whitespace-nowrap px-3 text-[15px] font-bold hover:bg-white/10 xl:px-4"
+            >
+              {item.label}
             </a>
           ))}
         </div>
-        <button className="flex items-center gap-2 py-3 font-bold md:hidden">
+        <button className="inline-flex h-14 items-center gap-2 font-bold md:hidden">
           <Menu size={20} /> मेनु
         </button>
-        <Link href="/admin/login" className="bg-[var(--civic-red)] px-4 py-3 text-sm font-bold hover:bg-red-700">
-          Admin Panel
+        <Link href="/admin/login" className="hidden h-14 items-center bg-[var(--civic-red)] px-4 text-sm font-bold hover:bg-red-700 lg:inline-flex">
+          Admin
         </Link>
       </div>
     </nav>
@@ -125,7 +112,7 @@ function NavBar() {
 
 function Hero() {
   return (
-    <section id="गृहपृष्ठ" className="bg-white">
+    <section id="home" className="bg-white">
       <div className="container-civic grid gap-6 py-8 lg:grid-cols-[1.4fr_0.8fr]">
         <div className="civic-card overflow-hidden">
           <div className="bg-[var(--civic-navy)] px-5 py-3 text-white">
@@ -137,16 +124,16 @@ function Hero() {
                 समुदायमै गुणस्तरीय, पहुँचयोग्य र उत्तरदायी स्वास्थ्य सेवा
               </h2>
               <p className="mt-4 leading-8 text-slate-700">
-                रौतामाई गाउँपालिकाको स्वास्थ्य शाखाले स्वास्थ्य संस्था समन्वय, मातृ तथा शिशु स्वास्थ्य, खोप, पोषण,
-                रोग नियन्त्रण, स्वास्थ्य तथ्यांक, आपतकालीन सेवा सूचना र नागरिक गुनासो व्यवस्थापनका कार्यहरू सञ्चालन गर्छ।
+                रौतामाई गाउँपालिकाको स्वास्थ्य शाखाले स्वास्थ्य संस्था समन्वय, मातृ तथा शिशु स्वास्थ्य, खोप, पोषण, रोग नियन्त्रण,
+                स्वास्थ्य तथ्याङ्क, आकस्मिक सेवा सूचना र नागरिक गुनासो व्यवस्थापनका कार्यहरू सञ्चालन गर्छ।
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <a href="#Online Appointment" className="rounded-md bg-[var(--civic-red)] px-4 py-2 font-bold text-white">Appointment Request</a>
-                <a href="#गुनासो" className="rounded-md border border-[var(--civic-blue)] px-4 py-2 font-bold text-[var(--civic-blue)]">गुनासो पठाउनुहोस्</a>
+                <a href="/appointments" className="rounded-md bg-[var(--civic-red)] px-4 py-2 font-bold text-white">Appointment Request</a>
+                <a href="/grievance" className="rounded-md border border-[var(--civic-blue)] px-4 py-2 font-bold text-[var(--civic-blue)]">गुनासो पठाउनुहोस्</a>
               </div>
             </div>
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-4 text-center">
-              <Image src="/ram.jfif" alt="Health unit chief" width={180} height={176} className="mx-auto h-40 w-40 rounded-md object-cover" />
+            <div id="chief" className="rounded-md border border-slate-200 bg-slate-50 p-4 text-center">
+              <Image src="/ram.jfif" alt="स्वास्थ्य इकाई प्रमुख" width={180} height={176} className="mx-auto h-40 w-40 rounded-md object-cover" />
               <p className="mt-3 font-extrabold text-[var(--civic-navy)]">{branchContact.chief}</p>
               <p className="text-sm text-slate-600">{branchContact.chiefTitle}</p>
             </div>
@@ -168,20 +155,20 @@ function Hero() {
 
 function NoticeNews() {
   return (
-    <section id="सूचना प्रकाशन" className="py-10">
+    <section id="notices" className="py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[1fr_0.7fr]">
         <div className="civic-card p-5">
           <h2 className="section-title">प्रमुख सूचना तथा समाचार</h2>
           <div className="mt-5 grid gap-4">
             {notices.map((notice) => (
-              <article key={notice.title} className="border-b border-slate-200 pb-4 last:border-0 last:pb-0">
+              <Link key={notice.title} href={`/notices/${slugify(notice.title)}`} className="block border-b border-slate-200 pb-4 last:border-0 last:pb-0">
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                   <span className="rounded bg-[var(--civic-red)] px-2 py-1 font-bold text-white">{notice.category}</span>
                   <span className="font-semibold text-slate-500">{notice.date}</span>
                 </div>
                 <h3 className="mt-2 text-lg font-extrabold text-[var(--civic-navy)]">{notice.title}</h3>
                 <p className="mt-1 text-slate-600">{notice.body}</p>
-              </article>
+              </Link>
             ))}
           </div>
         </div>
@@ -203,13 +190,13 @@ function NoticeNews() {
 
 function AboutSection() {
   return (
-    <section id="हाम्रो बारेमा" className="bg-white py-10">
+    <section id="about" className="bg-white py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <h2 className="section-title">हाम्रो बारेमा</h2>
           <p className="mt-5 leading-8 text-slate-700">
-            स्वास्थ्य शाखाले पालिकाभित्र स्वास्थ्य सेवा योजना, स्वास्थ्य संस्था सुपरिवेक्षण, जनस्वास्थ्य अभियान,
-            तथ्यांक संकलन तथा प्रतिवेदन, स्वास्थ्य शिक्षा र आकस्मिक स्वास्थ्य समन्वयको काम गर्छ।
+            स्वास्थ्य शाखाले पालिकाभित्र स्वास्थ्य सेवा योजना, स्वास्थ्य संस्था सुपरिवेक्षण, जनस्वास्थ्य अभियान, तथ्याङ्क संकलन
+            तथा प्रतिवेदन, स्वास्थ्य शिक्षा र आकस्मिक स्वास्थ्य समन्वयको काम गर्छ।
           </p>
         </div>
         <div className="civic-card p-5">
@@ -232,7 +219,7 @@ function AboutSection() {
 
 function InstitutionSection() {
   return (
-    <section id="स्वास्थ्य संस्था" className="py-10">
+    <section id="institutions" className="py-10">
       <div className="container-civic">
         <h2 className="section-title">स्वास्थ्य संस्थाहरूको विवरण</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -251,7 +238,7 @@ function InstitutionSection() {
           <div>
             <MapPin className="mx-auto text-[var(--civic-blue)]" size={38} />
             <p className="mt-3 font-extrabold text-[var(--civic-navy)]">Google Location Map</p>
-            <p className="text-sm text-slate-600">Supabase admin panelबाट embed/map URL अद्यावधिक गर्न मिल्ने।</p>
+            <p className="text-sm text-slate-600">Admin panel बाट embed/map URL अद्यावधिक गर्न मिल्ने।</p>
           </div>
         </div>
       </div>
@@ -261,18 +248,18 @@ function InstitutionSection() {
 
 function ProgramsSection() {
   return (
-    <section id="कार्यक्रम तथा सेवा" className="bg-white py-10">
+    <section id="programs" className="bg-white py-10">
       <div className="container-civic">
         <h2 className="section-title">कार्यक्रम तथा सेवाहरू</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {programs.map((program, index) => (
-            <div key={program.title} className="civic-card p-5">
+            <Link key={program.title} href={`/programs/${slugify(program.title)}`} className="civic-card block p-5 hover:border-[var(--civic-blue)]">
               <div className="grid h-11 w-11 place-items-center rounded bg-[var(--civic-blue)] text-white">
                 {index % 2 === 0 ? <HeartPulse size={22} /> : <Activity size={22} />}
               </div>
               <h3 className="mt-4 font-extrabold text-[var(--civic-navy)]">{program.title}</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">{program.summary}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -282,12 +269,12 @@ function ProgramsSection() {
 
 function ReportsDownloads() {
   return (
-    <section id="डाउनलोड" className="py-10">
+    <section id="reports" className="py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-2">
         <div className="civic-card p-5">
-          <h2 className="section-title">तथ्यांक तथा प्रतिवेदन</h2>
+          <h2 className="section-title">तथ्याङ्क तथा प्रतिवेदन</h2>
           <div className="mt-5 grid grid-cols-2 gap-4">
-            {["HMIS रिपोर्ट", "स्वास्थ्य सूचकहरू", "मासिक प्रतिवेदन", "Dashboard"].map((item) => (
+            {reportItems.map((item) => (
               <div key={item} className="rounded border border-slate-200 bg-slate-50 p-4">
                 <Newspaper className="text-[var(--civic-red)]" />
                 <p className="mt-3 font-bold">{item}</p>
@@ -295,12 +282,12 @@ function ReportsDownloads() {
             ))}
           </div>
         </div>
-        <div className="civic-card p-5">
+        <div id="downloads" className="civic-card p-5">
           <h2 className="section-title">डाउनलोड केन्द्र</h2>
           <div className="mt-5 space-y-3">
             {downloads.map((item) => (
-              <button key={item} className="flex w-full items-center justify-between rounded border border-slate-200 px-3 py-3 text-left font-bold hover:border-[var(--civic-blue)]">
-                {item}
+              <button key={item.title} className="flex w-full items-center justify-between rounded border border-slate-200 px-3 py-3 text-left font-bold hover:border-[var(--civic-blue)]">
+                {item.title}
                 <Download size={18} className="text-[var(--civic-blue)]" />
               </button>
             ))}
@@ -313,38 +300,104 @@ function ReportsDownloads() {
 
 function FormsSection() {
   return (
-    <section id="गुनासो" className="bg-white py-10">
+    <section id="forms" className="bg-white py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-2">
-        <FormCard title="Online Complaint Form" icon={<ShieldAlert />} fields={["नाम", "फोन", "गुनासो विषय"]} textarea="गुनासो विवरण" />
-        <FormCard title="Online Appointment Request" icon={<CalendarPlus />} fields={["नाम", "फोन", "सेवा प्रकार", "इच्छित मिति"]} textarea="थप विवरण" />
+        <SubmissionForm
+          id="grievance-form"
+          endpoint="/api/grievances"
+          title="Online Complaint Form"
+          icon={<ShieldAlert />}
+          fields={[
+            ["full_name", "नाम", "text"],
+            ["phone", "फोन", "tel"],
+            ["category", "गुनासो विषय", "text"]
+          ]}
+          textarea={["message", "गुनासो विवरण"]}
+        />
+        <SubmissionForm
+          id="appointment-form"
+          endpoint="/api/appointments"
+          title="Online Appointment Request"
+          icon={<CalendarPlus />}
+          fields={[
+            ["full_name", "नाम", "text"],
+            ["phone", "फोन", "tel"],
+            ["service", "सेवा प्रकार", "text"],
+            ["preferred_date", "इच्छित मिति", "date"]
+          ]}
+          textarea={["message", "थप विवरण"]}
+        />
       </div>
     </section>
   );
 }
 
-function FormCard({ title, icon, fields, textarea }: { title: string; icon: React.ReactNode; fields: string[]; textarea: string }) {
+function SubmissionForm({
+  id,
+  endpoint,
+  title,
+  icon,
+  fields,
+  textarea
+}: {
+  id: string;
+  endpoint: string;
+  title: string;
+  icon: React.ReactNode;
+  fields: [string, string, string][];
+  textarea: [string, string];
+}) {
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setStatus("");
+    const form = event.currentTarget;
+    const payload = Object.fromEntries(new FormData(form).entries());
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    setLoading(false);
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      setStatus(data?.error ?? "पठाउन सकेन। कृपया फेरि प्रयास गर्नुहोस्।");
+      return;
+    }
+    form.reset();
+    setStatus("तपाईंको विवरण सफलतापूर्वक प्राप्त भयो।");
+  }
+
   return (
-    <form id={title} className="civic-card p-5" onSubmit={(event) => event.preventDefault()}>
+    <form id={id} className="civic-card p-5" onSubmit={submit}>
       <div className="flex items-center gap-3">
         <span className="text-[var(--civic-red)]">{icon}</span>
         <h2 className="section-title">{title}</h2>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {fields.map((field) => (
-          <input key={field} className="admin-input" placeholder={field} />
+        {fields.map(([name, label, type]) => (
+          <input key={name} name={name} type={type} className="admin-input" placeholder={label} required={["full_name", "phone", "service"].includes(name)} />
         ))}
       </div>
-      <textarea className="admin-input mt-3 min-h-28" placeholder={textarea} />
-      <button className="mt-4 rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white">Submit</button>
+      <textarea name={textarea[0]} className="admin-input mt-3 min-h-28" placeholder={textarea[1]} required />
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button disabled={loading} className="rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white disabled:opacity-60">
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+        {status && <p className="text-sm font-bold text-slate-600">{status}</p>}
+      </div>
     </form>
   );
 }
 
 function EmergencySection() {
   return (
-    <section id="आपतकालीन" className="py-10">
+    <section id="emergency" className="py-10">
       <div className="container-civic">
-        <h2 className="section-title">आपतकालीन सेवा जानकारी</h2>
+        <h2 className="section-title">आकस्मिक सेवा जानकारी</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
           {emergencyContacts.map((item) => (
             <div key={item.title} className="civic-card p-5">
@@ -362,21 +415,21 @@ function EmergencySection() {
 
 function GalleryContact() {
   return (
-    <section id="सम्पर्क" className="bg-white py-10">
+    <section id="gallery" className="bg-white py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[1fr_0.8fr]">
         <div>
           <h2 className="section-title">फोटो तथा भिडियो ग्यालरी</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {["स्वास्थ्य शिविर", "खोप अभियान", "स्वास्थ्य सचेतना भिडियो"].map((item) => (
+            {galleryItems.map((item) => (
               <div key={item} className="civic-card aspect-[4/3] overflow-hidden">
-                <div className="grid h-full place-items-center bg-gradient-to-br from-slate-100 to-blue-100 p-4 text-center font-extrabold text-[var(--civic-navy)]">
+                <div className="grid h-full place-items-center bg-slate-100 p-4 text-center font-extrabold text-[var(--civic-navy)]">
                   {item}
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="civic-card p-5">
+        <div id="contact" className="civic-card p-5">
           <h2 className="section-title">Contact Us</h2>
           <div className="mt-5 space-y-3 text-slate-700">
             <p className="flex gap-2"><MapPin className="text-[var(--civic-red)]" /> {branchContact.address}</p>
@@ -436,4 +489,3 @@ function Footer() {
     </footer>
   );
 }
-

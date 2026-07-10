@@ -17,7 +17,8 @@ body {
   margin: 0;
   background: var(--soft);
   color: #172033;
-  font-family: Arial, "Noto Sans Devanagari", "Mangal", sans-serif;
+  font-family: "Noto Serif Devanagari", "Kalimati", "Mangal", "Nirmala UI", serif;
+  letter-spacing: 0;
 }
 
 a {
@@ -33,8 +34,71 @@ select {
 }
 
 .container-civic {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1230px, calc(100% - 32px));
   margin-inline: auto;
+}
+
+.identity-header {
+  border-top: 1px solid #d7d7d7;
+}
+
+.identity-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr 180px;
+  align-items: center;
+  min-height: 148px;
+  width: min(1230px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.identity-logo {
+  width: 112px;
+  height: auto;
+}
+
+.identity-title {
+  text-align: center;
+}
+
+.identity-title h1 {
+  color: #cf2027;
+  font-size: clamp(2.2rem, 4.3vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.identity-office {
+  margin-top: 10px;
+  color: var(--civic-navy);
+  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.identity-location {
+  margin-top: 12px;
+  color: #2c2c2c;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.identity-slogan {
+  margin-top: 10px;
+  color: #ef1b22;
+  font-size: clamp(0.95rem, 1.7vw, 1.25rem);
+  font-weight: 800;
+}
+
+.identity-flag {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 20px;
+}
+
+.nepal-flag {
+  width: 96px;
+  height: auto;
+  object-fit: contain;
 }
 
 .section-title {
@@ -73,4 +137,33 @@ select {
   color: #334155;
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .identity-grid {
+    grid-template-columns: 76px 1fr;
+    gap: 12px;
+    min-height: 112px;
+  }
+
+  .identity-logo {
+    width: 72px;
+  }
+
+  .identity-title {
+    text-align: left;
+  }
+
+  .identity-office {
+    margin-top: 6px;
+    font-size: 1.2rem;
+  }
+
+  .identity-location {
+    margin-top: 6px;
+  }
+
+  .identity-flag {
+    display: none;
+  }
 }

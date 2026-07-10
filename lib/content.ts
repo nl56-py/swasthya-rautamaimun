@@ -24,14 +24,28 @@ export type EmergencyContact = {
   details: string;
 };
 
+export type DownloadItem = {
+  title: string;
+  category: string;
+  fileUrl?: string;
+};
+
+export type CitizenCharterItem = {
+  service: string;
+  fee: string;
+  time: string;
+};
+
 export const branchContact = {
   municipality: "रौतामाई गाउँपालिका",
   office: "स्वास्थ्य शाखा",
+  provinceLine: "कोशी प्रदेश, उदयपुर",
+  slogan: "गुणस्तरीय स्वास्थ्य सेवा, नागरिकमैत्री सूचना र उत्तरदायी सेवा प्रवाह",
   chief: "राम नारायण चौधरी",
   chiefTitle: "स्वास्थ्य इकाई प्रमुख",
   email: "ramnchaudhary989@gmail.com",
   phone: "9862998884",
-  address: "रौतामाई गाउँपालिका, गाउँ कार्यपालिकाको कार्यालय"
+  address: "रौतामाई गाउँपालिका, गाउँ कार्यपालिकाको कार्यालय, उदयपुर"
 };
 
 export const notices: Notice[] = [
@@ -39,19 +53,19 @@ export const notices: Notice[] = [
     title: "नियमित खोप सेवा सम्बन्धी सूचना",
     category: "सूचना",
     date: "२०८३/०३/२४",
-    body: "पालिकाभित्रका सबै स्वास्थ्य संस्थाहरूबाट नियमित खोप सेवा उपलब्ध हुनेछ।"
+    body: "पालिकाभित्रका सबै स्वास्थ्य संस्थाबाट नियमित खोप सेवा उपलब्ध हुने जानकारी गराइन्छ।"
   },
   {
-    title: "मातृ तथा शिशु स्वास्थ्य शिविर",
+    title: "मातृ तथा शिशु स्वास्थ्य शिविर सञ्चालन",
     category: "समाचार",
     date: "२०८३/०३/२०",
-    body: "गर्भवती जाँच, पोषण परामर्श र बाल स्वास्थ्य सेवा सञ्चालन गरिनेछ।"
+    body: "गर्भवती जाँच, पोषण परामर्श र बाल स्वास्थ्य सेवाका लागि विशेष शिविर सञ्चालन गरिनेछ।"
   },
   {
     title: "स्वास्थ्य प्रोफाइल अद्यावधिक",
     category: "प्रकाशन",
     date: "२०८३/०३/१८",
-    body: "वडा तहका स्वास्थ्य सूचकहरू अद्यावधिक गर्न सम्बन्धित संस्थालाई अनुरोध।"
+    body: "वडा तहका स्वास्थ्य सूचकहरू अद्यावधिक गर्न सम्बन्धित संस्थालाई अनुरोध गरिन्छ।"
   }
 ];
 
@@ -96,19 +110,22 @@ export const emergencyContacts: EmergencyContact[] = [
   { title: "सर्पदंश उपचार केन्द्र", phone: "अद्यावधिक गर्न बाँकी", details: "नजिकको उपचार केन्द्र जानकारी" }
 ];
 
-export const downloads = [
-  "स्वास्थ्य सेवा फाराम",
-  "मासिक प्रतिवेदन ढाँचा",
-  "HMIS रिपोर्ट ढाँचा",
-  "स्वास्थ्य सम्बन्धी IEC Materials",
-  "वार्षिक प्रतिवेदन",
-  "स्वास्थ्य प्रोफाइल"
+export const downloads: DownloadItem[] = [
+  { title: "स्वास्थ्य सेवा फाराम", category: "फाराम" },
+  { title: "मासिक प्रतिवेदन ढाँचा", category: "प्रतिवेदन" },
+  { title: "HMIS रिपोर्ट ढाँचा", category: "प्रतिवेदन" },
+  { title: "स्वास्थ्य सम्बन्धी IEC सामग्री", category: "सामग्री" },
+  { title: "वार्षिक प्रतिवेदन", category: "प्रकाशन" },
+  { title: "स्वास्थ्य प्रोफाइल", category: "प्रकाशन" }
 ];
 
-export const citizenCharter = [
+export const citizenCharter: CitizenCharterItem[] = [
   { service: "नियमित खोप", fee: "निःशुल्क", time: "खोप तालिकाअनुसार" },
   { service: "गर्भवती जाँच", fee: "निःशुल्क", time: "कार्यालय समय" },
   { service: "परिवार नियोजन परामर्श", fee: "निःशुल्क", time: "कार्यालय समय" },
-  { service: "स्वास्थ्य सिफारिस/रेफरल", fee: "नियमअनुसार", time: "सोही दिन" }
+  { service: "स्वास्थ्य सिफारिस/रेफरल", fee: "नियमानुसार", time: "सोही दिन" }
 ];
 
+export const galleryItems = ["स्वास्थ्य शिविर", "खोप अभियान", "स्वास्थ्य सचेतना भिडियो"];
+
+export const reportItems = ["HMIS रिपोर्ट", "स्वास्थ्य सूचकहरू", "मासिक प्रतिवेदन", "Dashboard"];
