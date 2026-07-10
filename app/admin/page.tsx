@@ -369,7 +369,7 @@ export default function AdminPage() {
     Object.fromEntries(Object.values(moduleConfigs).map((config) => [config.id, config.seed])) as Record<ModuleId, string>
   );
   const [status, setStatus] = useState("");
-  const [checking, setChecking] = useState(isSupabaseConfigured);
+  const [checking, setChecking] = useState(true);
   const [grievances, setGrievances] = useState<Submission[]>([]);
   const [appointments, setAppointments] = useState<Submission[]>([]);
 
@@ -379,7 +379,7 @@ export default function AdminPage() {
     async function boot() {
       const supabase = getSupabaseClient();
       if (!supabase) {
-        setChecking(false);
+        router.push("/admin/login");
         return;
       }
 
@@ -449,7 +449,7 @@ export default function AdminPage() {
     setStatus("Saving...");
     const supabase = getSupabaseClient();
     if (!supabase) {
-      setStatus("Local preview mode. Supabase configure गरेपछि यो module database मा save हुन्छ।");
+      setStatus("त्रुटि: Supabase जडान हुन सकेन।");
       return;
     }
 
@@ -495,7 +495,7 @@ export default function AdminPage() {
   async function updateSubmissionStatus(table: "grievances" | "appointments", id: string, nextStatus: string) {
     const supabase = getSupabaseClient();
     if (!supabase) {
-      setStatus("Local preview mode. Status update needs Supabase.");
+      setStatus("त्रुटि: Supabase जडान हुन सकेन।");
       return;
     }
 
@@ -521,16 +521,52 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-slate-100">
-      <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
-        <aside className="bg-[var(--civic-navy)] text-white">
-          <div className="flex items-center gap-3 border-b border-white/10 p-5">
-            <Image src="/emblem.png" alt="Rautamai emblem" width={54} height={45} className="h-12 w-auto" />
-            <div>
-              <p className="text-sm text-white/70">स्वास्थ्य शाखा</p>
-              <p className="font-extrabold">Admin Panel</p>
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* Sidebar / Mobile Top bar */}
+        <aside className="w-full lg:w-[280px] bg-[var(--civic-navy)] text-white shrink-0">
+          <div className="flex items-center justify-between lg:justify-start gap-3 border-b border-white/10 p-4 lg:p-5">
+            <div className="flex items-center gap-3">
+              <Image src="/emblem.png" alt="Rautamai emblem" width={48} height={40} className="h-10 w-auto" />
+              <div>
+                <p className="text-xs text-white/70">स्वास्थ्य शाखा</p>
+                <p className="font-extrabold text-sm lg:text-base">Admin Panel</p>
+              </div>
+            </div>
+
+            {/* Quick Actions for Mobile */}
+            <div className="flex gap-2 lg:hidden">
+              <Link href="/" className="rounded bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20">
+                View Site
+              </Link>
+              <button onClick={signOut} className="rounded bg-[var(--civic-red)] px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700">
+                Sign Out
+              </button>
             </div>
           </div>
-          <nav className="grid gap-1 p-3">
+
+          {/* Module Selector Dropdown for Mobile */}
+          <div className="p-3 lg:hidden border-b border-white/10">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-white/50 mb-1">
+              Select Module
+            </label>
+            <select
+              value={active}
+              onChange={(event) => {
+                setActive(event.target.value as ModuleId);
+                setStatus("");
+              }}
+              className="w-full rounded bg-white/10 border border-white/20 px-3 py-2 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-[var(--civic-red)]"
+            >
+              {sections.map((section) => (
+                <option key={section.id} value={section.id} className="text-slate-900 bg-white">
+                  {section.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sidebar Nav for Desktop */}
+          <nav className="hidden lg:grid gap-1 p-3">
             {sections.map((section) => {
               const Icon = section.icon;
               return (
@@ -553,8 +589,10 @@ export default function AdminPage() {
           </nav>
         </aside>
 
-        <section>
-          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white p-5">
+        {/* Main Content Area */}
+        <section className="flex-1 min-w-0">
+          {/* Header for Desktop */}
+          <header className="hidden lg:flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white p-5">
             <div>
               <p className="text-sm font-bold text-[var(--civic-red)]">Content Management</p>
               <h1 className="text-2xl font-extrabold text-[var(--civic-navy)]">{config.label}</h1>
@@ -567,14 +605,15 @@ export default function AdminPage() {
             </div>
           </header>
 
-          <div className="p-5">
-            {!isSupabaseConfigured && (
-              <div className="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
-                Supabase env vars missing. This admin panel is running in local preview mode.
-              </div>
-            )}
+          {/* Title for Mobile */}
+          <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-3">
+            <p className="text-xs font-bold text-[var(--civic-red)]">Content Management</p>
+            <h1 className="text-xl font-extrabold text-[var(--civic-navy)]">{config.label}</h1>
+          </div>
 
-            <div className="mb-5 grid gap-4 md:grid-cols-5">
+          <div className="p-4 lg:p-5">
+            {/* Stats Dashboard Grid */}
+            <div className="mb-5 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
               {[
                 ["Notices", moduleCounts.notices],
                 ["Institutions", moduleCounts.institutions],
@@ -584,11 +623,12 @@ export default function AdminPage() {
               ].map(([label, value]) => (
                 <div key={label} className="civic-card p-4">
                   <p className="text-sm font-bold text-slate-500">{label}</p>
-                  <p className="mt-1 text-3xl font-extrabold text-[var(--civic-navy)]">{value}</p>
+                  <p className="mt-1 text-2xl lg:text-3xl font-extrabold text-[var(--civic-navy)]">{value}</p>
                 </div>
               ))}
             </div>
 
+            {/* Submissions Section */}
             <div className="mb-5 grid gap-4 xl:grid-cols-2">
               <SubmissionList
                 title="Latest Grievances"
@@ -608,13 +648,14 @@ export default function AdminPage() {
               />
             </div>
 
-            <form onSubmit={saveModule} className="civic-card p-5">
+            {/* Editor Card */}
+            <form onSubmit={saveModule} className="civic-card p-4 lg:p-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-extrabold text-[var(--civic-navy)]">{config.label} Editor</h2>
-                  <p className="mt-1 text-sm font-semibold text-slate-500">{config.helper}</p>
+                  <h2 className="text-lg lg:text-xl font-extrabold text-[var(--civic-navy)]">{config.label} Editor</h2>
+                  <p className="mt-1 text-xs lg:text-sm font-semibold text-slate-500">{config.helper}</p>
                 </div>
-                <button className="inline-flex items-center gap-2 rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white">
+                <button className="inline-flex items-center gap-2 rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white text-sm">
                   <Save size={18} /> Save Module
                 </button>
               </div>
@@ -626,10 +667,10 @@ export default function AdminPage() {
               />
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <button type="button" onClick={loadEditableContent} className="rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700">
+                <button type="button" onClick={loadEditableContent} className="rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700 text-sm">
                   Reload from Database
                 </button>
-                {status && <p className="font-semibold text-slate-600">{status}</p>}
+                {status && <p className="font-semibold text-slate-600 text-sm">{status}</p>}
               </div>
             </form>
           </div>

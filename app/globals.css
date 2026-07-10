@@ -44,16 +44,19 @@ select {
 
 .identity-grid {
   display: grid;
-  grid-template-columns: 180px 1fr 180px;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
   align-items: center;
-  min-height: 148px;
+  min-height: 120px;
   width: min(1230px, calc(100% - 32px));
   margin-inline: auto;
+  padding-block: 15px;
 }
 
 .identity-logo {
-  width: 112px;
+  width: 100px;
   height: auto;
+  max-width: 100%;
 }
 
 .identity-title {
@@ -62,41 +65,40 @@ select {
 
 .identity-title h1 {
   color: #cf2027;
-  font-size: clamp(2.2rem, 4.3vw, 3.8rem);
+  font-size: clamp(1.5rem, 3.2vw, 3rem);
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .identity-office {
-  margin-top: 10px;
+  margin-top: 8px;
   color: var(--civic-navy);
-  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  font-size: clamp(1.1rem, 2.2vw, 1.7rem);
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .identity-location {
-  margin-top: 12px;
+  margin-top: 8px;
   color: #2c2c2c;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
 }
 
 .identity-slogan {
-  margin-top: 10px;
+  margin-top: 8px;
   color: #ef1b22;
-  font-size: clamp(0.95rem, 1.7vw, 1.25rem);
+  font-size: clamp(0.85rem, 1.5vw, 1.15rem);
   font-weight: 800;
 }
 
 .identity-flag {
   display: flex;
   justify-content: flex-end;
-  padding-right: 20px;
 }
 
 .nepal-flag {
-  width: 96px;
+  width: 80px;
   height: auto;
   object-fit: contain;
 }
@@ -141,26 +143,39 @@ select {
 
 @media (max-width: 768px) {
   .identity-grid {
-    grid-template-columns: 76px 1fr;
-    gap: 12px;
-    min-height: 112px;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    min-height: auto;
+    padding-block: 12px;
   }
 
   .identity-logo {
-    width: 72px;
+    width: 64px;
   }
 
   .identity-title {
     text-align: left;
   }
 
+  .identity-title h1 {
+    font-size: clamp(1.2rem, 5.5vw, 1.8rem);
+    line-height: 1.2;
+  }
+
   .identity-office {
-    margin-top: 6px;
-    font-size: 1.2rem;
+    margin-top: 4px;
+    font-size: clamp(0.95rem, 4.5vw, 1.25rem);
+    line-height: 1.2;
   }
 
   .identity-location {
-    margin-top: 6px;
+    margin-top: 4px;
+    font-size: 0.85rem;
+  }
+
+  .identity-slogan {
+    margin-top: 4px;
+    font-size: clamp(0.75rem, 3.5vw, 0.95rem);
   }
 
   .identity-flag {
