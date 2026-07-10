@@ -11,6 +11,7 @@ import {
   Download,
   FileText,
   Home,
+  Lock,
   LogOut,
   Megaphone,
   MessageSquare,
@@ -52,7 +53,8 @@ type ModuleId =
   | "appointments"
   | "vaccination"
   | "nutrition"
-  | "family_health";
+  | "family_health"
+  | "change_password";
 
 type Submission = {
   id: string;
@@ -93,7 +95,8 @@ const sections = [
   { id: "appointments", label: "Appointments", icon: CalendarPlus },
   { id: "vaccination", label: "खोप सेवा विवरण", icon: FileText },
   { id: "nutrition", label: "पोषणको अवस्था", icon: FileText },
-  { id: "family_health", label: "परिवार स्वास्थ्य अवस्था", icon: FileText }
+  { id: "family_health", label: "परिवार स्वास्थ्य अवस्था", icon: FileText },
+  { id: "change_password", label: "पासवर्ड परिवर्तन (Password)", icon: Lock }
 ] as const;
 
 const overviewSeed = [
@@ -359,6 +362,13 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
         total: parts[5] ? parseInt(parts[5], 10) : null,
         sort_order: index
       }))
+  },
+  change_password: {
+    id: "change_password",
+    label: "पासवर्ड परिवर्तन (Change Password)",
+    helper: "नयाँ पासवर्ड सेट गर्नुहोस्।",
+    seed: "",
+    parse: () => []
   }
 };
 
@@ -612,67 +622,73 @@ export default function AdminPage() {
           </div>
 
           <div className="p-4 lg:p-5">
-            {/* Stats Dashboard Grid */}
-            <div className="mb-5 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
-              {[
-                ["Notices", moduleCounts.notices],
-                ["Institutions", moduleCounts.institutions],
-                ["Programs", moduleCounts.programs],
-                ["Grievances", moduleCounts.grievances],
-                ["Appointments", moduleCounts.appointments]
-              ].map(([label, value]) => (
-                <div key={label} className="civic-card p-4">
-                  <p className="text-sm font-bold text-slate-500">{label}</p>
-                  <p className="mt-1 text-2xl lg:text-3xl font-extrabold text-[var(--civic-navy)]">{value}</p>
+            {active === "change_password" ? (
+              <PasswordChangeForm />
+            ) : (
+              <>
+                {/* Stats Dashboard Grid */}
+                <div className="mb-5 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+                  {[
+                    ["Notices", moduleCounts.notices],
+                    ["Institutions", moduleCounts.institutions],
+                    ["Programs", moduleCounts.programs],
+                    ["Grievances", moduleCounts.grievances],
+                    ["Appointments", moduleCounts.appointments]
+                  ].map(([label, value]) => (
+                    <div key={label} className="civic-card p-4">
+                      <p className="text-sm font-bold text-slate-500">{label}</p>
+                      <p className="mt-1 text-2xl lg:text-3xl font-extrabold text-[var(--civic-navy)]">{value}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Submissions Section */}
-            <div className="mb-5 grid gap-4 xl:grid-cols-2">
-              <SubmissionList
-                title="Latest Grievances"
-                table="grievances"
-                items={grievances}
-                empty="No grievances yet."
-                statuses={["new", "in_review", "resolved", "closed"]}
-                onStatusChange={updateSubmissionStatus}
-              />
-              <SubmissionList
-                title="Latest Appointments"
-                table="appointments"
-                items={appointments}
-                empty="No appointment requests yet."
-                statuses={["requested", "confirmed", "completed", "cancelled"]}
-                onStatusChange={updateSubmissionStatus}
-              />
-            </div>
-
-            {/* Editor Card */}
-            <form onSubmit={saveModule} className="civic-card p-4 lg:p-5">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-lg lg:text-xl font-extrabold text-[var(--civic-navy)]">{config.label} Editor</h2>
-                  <p className="mt-1 text-xs lg:text-sm font-semibold text-slate-500">{config.helper}</p>
+                {/* Submissions Section */}
+                <div className="mb-5 grid gap-4 xl:grid-cols-2">
+                  <SubmissionList
+                    title="Latest Grievances"
+                    table="grievances"
+                    items={grievances}
+                    empty="No grievances yet."
+                    statuses={["new", "in_review", "resolved", "closed"]}
+                    onStatusChange={updateSubmissionStatus}
+                  />
+                  <SubmissionList
+                    title="Latest Appointments"
+                    table="appointments"
+                    items={appointments}
+                    empty="No appointment requests yet."
+                    statuses={["requested", "confirmed", "completed", "cancelled"]}
+                    onStatusChange={updateSubmissionStatus}
+                  />
                 </div>
-                <button className="inline-flex items-center gap-2 rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white text-sm">
-                  <Save size={18} /> Save Module
-                </button>
-              </div>
 
-              <textarea
-                className="admin-input mt-5 min-h-[360px] font-mono text-sm leading-7"
-                value={moduleText[active]}
-                onChange={(event) => setModuleText((current) => ({ ...current, [active]: event.target.value }))}
-              />
+                {/* Editor Card */}
+                <form onSubmit={saveModule} className="civic-card p-4 lg:p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg lg:text-xl font-extrabold text-[var(--civic-navy)]">{config.label} Editor</h2>
+                      <p className="mt-1 text-xs lg:text-sm font-semibold text-slate-500">{config.helper}</p>
+                    </div>
+                    <button className="inline-flex items-center gap-2 rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white text-sm">
+                      <Save size={18} /> Save Module
+                    </button>
+                  </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <button type="button" onClick={loadEditableContent} className="rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700 text-sm">
-                  Reload from Database
-                </button>
-                {status && <p className="font-semibold text-slate-600 text-sm">{status}</p>}
-              </div>
-            </form>
+                  <textarea
+                    className="admin-input mt-5 min-h-[360px] font-mono text-sm leading-7"
+                    value={moduleText[active]}
+                    onChange={(event) => setModuleText((current) => ({ ...current, [active]: event.target.value }))}
+                  />
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <button type="button" onClick={loadEditableContent} className="rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700 text-sm">
+                      Reload from Database
+                    </button>
+                    {status && <p className="font-semibold text-slate-600 text-sm">{status}</p>}
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </section>
       </div>
@@ -746,4 +762,95 @@ function normalizeDate(value: string | null | undefined) {
 
 function rowCount(text: string) {
   return text.split("\n").filter((line) => line.trim()).length;
+}
+
+function PasswordChangeForm() {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (password !== confirmPassword) {
+      setStatus("त्रुटि: पासवर्डहरू मेल खाएनन् (Passwords do not match).");
+      return;
+    }
+    if (password.length < 6) {
+      setStatus("त्रुटि: पासवर्ड कम्तिमा ६ अक्षरको हुनुपर्छ (Password must be at least 6 characters).");
+      return;
+    }
+
+    setLoading(true);
+    setStatus("");
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setStatus("त्रुटि: Supabase जडान हुन सकेन।");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) {
+      setStatus(`त्रुटि: ${error.message}`);
+    } else {
+      setStatus("सफलतापूर्वक: पासवर्ड परिवर्तन भयो (Password updated successfully!).");
+      setPassword("");
+      setConfirmPassword("");
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="civic-card p-5 max-w-md bg-white">
+      <div>
+        <h2 className="text-xl font-extrabold text-[var(--civic-navy)]">पासवर्ड परिवर्तन गर्नुहोस्</h2>
+        <p className="mt-1 text-xs font-semibold text-slate-500">तपाईंको नयाँ सुरक्षित पासवर्ड यहाँ प्रविष्ट गर्नुहोस्।</p>
+      </div>
+
+      <div className="mt-5 grid gap-4">
+        <label className="admin-label">
+          नयाँ पासवर्ड (New Password)
+          <input
+            type="password"
+            className="admin-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </label>
+
+        <label className="admin-label">
+          पासवर्ड पुष्टि गर्नुहोस् (Confirm Password)
+          <input
+            type="password"
+            className="admin-input"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </label>
+
+        {status && (
+          <p className={cn(
+            "rounded p-3 text-sm font-semibold border",
+            status.startsWith("सफलतापूर्वक") 
+              ? "bg-green-50 text-green-800 border-green-200" 
+              : "bg-red-50 text-red-800 border-red-200"
+          )}>
+            {status}
+          </p>
+        )}
+
+        <button
+          disabled={loading}
+          className="rounded-md bg-[var(--civic-blue)] px-4 py-2.5 font-bold text-white disabled:opacity-60 cursor-pointer hover:bg-opacity-90 transition-colors mt-2 text-sm"
+        >
+          {loading ? "पासवर्ड अपडेट हुँदैछ..." : "पासवर्ड अपडेट गर्नुहोस्"}
+        </button>
+      </div>
+    </form>
+  );
 }
