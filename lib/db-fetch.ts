@@ -344,3 +344,56 @@ export async function fetchFamilyHealthStatus() {
 
   return familyHealthSeed;
 }
+
+export async function fetchBlogs() {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return [];
+
+  try {
+    const { data } = await supabase
+      .from("blogs")
+      .select("id, title, slug, content, cover_image_url, published_at")
+      .order("published_at", { ascending: false });
+
+    if (data) return data;
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+  }
+  return [];
+}
+
+export async function fetchBlogBySlug(slug: string) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
+
+  try {
+    const { data } = await supabase
+      .from("blogs")
+      .select("id, title, slug, content, cover_image_url, published_at")
+      .eq("slug", slug)
+      .single();
+
+    if (data) return data;
+  } catch (error) {
+    console.error("Error fetching blog by slug:", error);
+  }
+  return null;
+}
+
+export async function fetchVideos() {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return [];
+
+  try {
+    const { data } = await supabase
+      .from("videos")
+      .select("id, title, youtube_url, sort_order")
+      .order("sort_order", { ascending: true });
+
+    if (data) return data;
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+  }
+  return [];
+}
+

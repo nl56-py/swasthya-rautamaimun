@@ -1,5 +1,6 @@
-import { Newspaper, FileText, Download } from "lucide-react";
+import { FileText } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
+import { ReportList } from "@/components/report-list";
 import {
   fetchReports,
   fetchVaccinationRecords,
@@ -182,27 +183,9 @@ export default async function ReportsPage() {
               <FileText className="text-[var(--civic-red)]" />
               आधिकारिक प्रतिवेदन तथा दस्तावेजहरू
             </h2>
-            <p className="text-sm text-slate-500 mt-1">डाउनलोड गरी अध्ययन गर्न सकिने आधिकारिक स्वास्थ्य प्रतिवेदन तथाHMIS बुलेटिनहरू।</p>
+            <p className="text-sm text-slate-500 mt-1">डाउनलोड गरी अध्ययन गर्न सकिने आधिकारिक स्वास्थ्य प्रतिवेदन तथा HMIS बुलेटिनहरू।</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {reports.map((item) => (
-              <div key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-5 hover:border-[var(--civic-blue)] transition-colors relative group">
-                <Newspaper className="text-[var(--civic-red)]" />
-                <h3 className="mt-3 font-extrabold text-[var(--civic-navy)] text-base">{item.title}</h3>
-                <p className="mt-2 text-xs text-slate-500">प्रतिवेदन ढाँचा / आधिकारिक दस्तावेज</p>
-                {item.fileUrl ? (
-                  <a
-                    href={item.fileUrl}
-                    className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-[var(--civic-blue)] hover:underline"
-                  >
-                    <Download size={14} /> डाउनलोड
-                  </a>
-                ) : (
-                  <span className="mt-4 inline-block text-xs font-bold text-slate-400">फाइल अद्यावधिक हुँदै</span>
-                )}
-              </div>
-            ))}
-          </div>
+          <ReportList reports={reports} />
         </div>
 
       </div>

@@ -27,7 +27,9 @@ import {
   fetchReports,
   fetchEmergencyContacts,
   fetchGalleryItems,
-  fetchCitizenCharter
+  fetchCitizenCharter,
+  fetchBlogs,
+  fetchVideos
 } from "@/lib/db-fetch";
 
 export default async function HomePage() {
@@ -41,6 +43,8 @@ export default async function HomePage() {
   const emergencyContacts = await fetchEmergencyContacts();
   const galleryItems = await fetchGalleryItems();
   const citizenCharter = await fetchCitizenCharter();
+  const blogs = await fetchBlogs();
+  const videos = await fetchVideos();
 
   return (
     <main>
@@ -50,6 +54,7 @@ export default async function HomePage() {
       <AboutSection aboutText={aboutText} branchContact={branchContact} />
       <InstitutionSection institutions={institutions} />
       <ProgramsSection programs={programs} />
+      <BlogVideoSection blogs={blogs} videos={videos} />
       <ReportsDownloads reports={reports} downloads={downloads} />
       <FormsSection />
       <EmergencySection emergencyContacts={emergencyContacts} />
@@ -364,3 +369,122 @@ function CitizenCharter({ citizenCharter }: { citizenCharter: any[] }) {
     </section>
   );
 }
+
+function getEmbedUrl(url: string) {
+  let videoId = "";
+  try {
+    const urlObj = new URL(url);
+    if (urlObj.hostname === "youtu.be") {
+      videoId = urlObj.pathname.slice(1);
+    } else if (urlObj.hostname.includes("youtube.com")) {
+      videoId = urlObj.searchParams.get("v") || "";
+      if (!videoId && urlObj.pathname.startsWith("/embed/")) {
+        videoId = urlObj.pathname.slice(7);
+      }
+    }
+  } catch (e) {
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (match) videoId = match[1];
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
+function BlogVideoSection({ blogs, videos }: { blogs: any[]; videos: any[] }) {
+  const featuredBlogs = blogs.slice(0, 2);
+  const featuredVideos = videos.slice(0, 2);
+
+  if (featuredBlogs.length === 0 && featuredVideos.length === 0) return null;
+
+  return (
+    <section id="blog-video" className="py-10 bg-slate-50 border-y border-slate-200">
+      <div className="container-civic grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+        {/* Blogs Column */}
+        <div>
+          <h2 className="section-title">स्वास्थ्य सन्देश तथा ब्लगहरू</h2>
+          {featuredBlogs.length === 0 ? (
+            <p className="mt-6 text-sm font-semibold text-slate-500">कुनै ब्लगहरू फेला परेनन्।</p>
+          ) : (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {featuredBlogs.map((blog) => (
+                <div key={blog.id} className="civic-card bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+                  {blog.cover_image_url && (
+                    <div className="relative aspect-[16/10] bg-slate-100 shrink-0">
+                      <img src={blog.cover_image_url} alt={blog.title} className="h-full w-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs text-slate-500 font-semibold mb-2">
+                        {new Date(blog.published_at).toLocaleDateString("ne-NP")}
+                      </p>
+                      <h3 className="font-extrabold text-sm text-[var(--civic-navy)] line-clamp-2 hover:text-[var(--civic-red)] transition-colors">
+                        <Link href={`/blogs/${blog.slug}`}>{blog.title}</Link>
+                      </h3>
+                    </div>
+                    <Link href={`/blogs/${blog.slug}`} className="mt-3 inline-block font-bold text-xs text-[var(--civic-blue)] hover:underline">
+                      थप पढ्नुहोस् &rarr;
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {blogs.length > 2 && (
+            <div className="mt-5 text-right">
+              <Link href="/blogs" className="inline-flex rounded bg-[var(--civic-blue)] px-4 py-2 text-xs font-bold text-white hover:bg-opacity-90">
+                सबै ब्लगहरू हेर्नुहोस् &rarr;
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Videos Column */}
+        <div>
+          <h2 className="section-title">स्वास्थ्य सचेतना भिडियोहरू</h2>
+          {featuredVideos.length === 0 ? (
+            <p className="mt-6 text-sm font-semibold text-slate-500">कुनै भिडियोहरू फेला परेनन्।</p>
+          ) : (
+            <div className="mt-6 space-y-4">
+              {featuredVideos.map((video) => {
+                const embedUrl = getEmbedUrl(video.youtube_url);
+                return (
+                  <div key={video.id} className="civic-card bg-white overflow-hidden p-3 flex gap-3">
+                    <div className="relative aspect-video w-32 bg-slate-100 shrink-0 rounded overflow-hidden">
+                      {embedUrl ? (
+                        <iframe
+                          src={embedUrl}
+                          title={video.title}
+                          className="absolute inset-0 h-full w-full border-0"
+                          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div className="grid h-full place-items-center text-[10px] text-slate-400">Preview</div>
+                      )}
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <h3 className="font-bold text-xs text-[var(--civic-navy)] leading-snug line-clamp-2 mb-1">
+                        {video.title}
+                      </h3>
+                      <Link href="/videos" className="text-[11px] font-bold text-[var(--civic-red)] hover:underline">
+                        भिडियो हेर्नुहोस्
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {videos.length > 2 && (
+            <div className="mt-5 text-right">
+              <Link href="/videos" className="inline-flex rounded bg-[var(--civic-red)] px-4 py-2 text-xs font-bold text-white hover:bg-opacity-90">
+                सबै भिडियोहरू हेर्नुहोस् &rarr;
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+

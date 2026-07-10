@@ -154,3 +154,32 @@ create policy "authenticated manage gallery items" on gallery_items for all to a
 create policy "authenticated manage citizen charter" on citizen_charter for all to authenticated using (true) with check (true);
 create policy "authenticated manage grievances" on grievances for all to authenticated using (true) with check (true);
 create policy "authenticated manage appointments" on appointments for all to authenticated using (true) with check (true);
+
+create table if not exists blogs (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text unique not null,
+  content text not null, -- rich text HTML
+  cover_image_url text,
+  published_at timestamptz default now(),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists videos (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  youtube_url text not null,
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
+
+alter table blogs enable row level security;
+alter table videos enable row level security;
+
+create policy "public read blogs" on blogs for select using (true);
+create policy "public read videos" on videos for select using (true);
+
+create policy "authenticated manage blogs" on blogs for all to authenticated using (true) with check (true);
+create policy "authenticated manage videos" on videos for all to authenticated using (true) with check (true);
+

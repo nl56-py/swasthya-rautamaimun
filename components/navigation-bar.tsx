@@ -12,6 +12,8 @@ const navItems = [
   { label: "प्रतिवेदन", href: "/reports" },
   { label: "सूचना", href: "/notices" },
   { label: "डाउनलोड", href: "/downloads" },
+  { label: "ब्लग", href: "/blogs" },
+  { label: "भिडियो", href: "/videos" },
   { label: "आकस्मिक सम्पर्क", href: "/emergency" },
   { label: "नागरिक बडापत्र", href: "/citizen-charter" },
   { label: "ग्यालरी", href: "/gallery" },

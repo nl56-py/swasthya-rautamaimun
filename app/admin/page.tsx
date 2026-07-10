@@ -17,7 +17,13 @@ import {
   MessageSquare,
   Save,
   Stethoscope,
-  Users
+  Users,
+  Edit,
+  Trash2,
+  Plus,
+  Video,
+  Eye,
+  Check
 } from "lucide-react";
 import {
   branchContact,
@@ -54,6 +60,8 @@ type ModuleId =
   | "vaccination"
   | "nutrition"
   | "family_health"
+  | "blogs"
+  | "videos"
   | "change_password";
 
 type Submission = {
@@ -74,23 +82,25 @@ type ModuleConfig = {
   table?: string;
   select?: string;
   seed: string;
-  serialize?: (rows: Record<string, unknown>[]) => string;
-  parse: (text: string) => Record<string, unknown>[];
+  serialize?: (rows: any[]) => string;
+  parse: (text: string) => any[];
 };
 
 const sections = [
-  { id: "home", label: "Home Page", icon: Home },
+  { id: "home", label: "Home Page Settings", icon: Home },
   { id: "about", label: "हाम्रो बारेमा", icon: Users },
   { id: "staff", label: "कर्मचारी", icon: Users },
   { id: "institutions", label: "स्वास्थ्य संस्था", icon: Building2 },
   { id: "programs", label: "कार्यक्रम सेवा", icon: Stethoscope },
   { id: "notices", label: "सूचना प्रकाशन", icon: Megaphone },
-  { id: "reports", label: "Data & Reports", icon: FileText },
-  { id: "downloads", label: "Download Center", icon: Download },
-  { id: "grievance", label: "Grievance", icon: MessageSquare },
+  { id: "reports", label: "प्रतिवेदन (Reports)", icon: FileText },
+  { id: "downloads", label: "डाउनलोड केन्द्र", icon: Download },
+  { id: "blogs", label: "ब्लग लेखहरू (Blogs)", icon: FileText },
+  { id: "videos", label: "भिडियो (Videos)", icon: Video },
+  { id: "grievance", label: "गुनासो (Grievance)", icon: MessageSquare },
   { id: "emergency", label: "Emergency", icon: Bell },
   { id: "gallery", label: "Gallery", icon: FileText },
-  { id: "contact", label: "Contact", icon: Users },
+  { id: "contact", label: "Contact Info", icon: Users },
   { id: "charter", label: "Citizen Charter", icon: FileText },
   { id: "appointments", label: "Appointments", icon: CalendarPlus },
   { id: "vaccination", label: "खोप सेवा विवरण", icon: FileText },
@@ -117,27 +127,35 @@ const contactSeed = [
   `address | ${branchContact.address}`
 ].join("\n");
 
+function serializeKeyValue(metadata: Record<string, string>) {
+  return Object.entries(metadata || {})
+    .map(([key, value]) => `${key} | ${value}`)
+    .join("\n");
+}
+
 const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   home: {
     id: "home",
-    label: "Home Page",
-    helper: "One setting per row: key | value. Saved in site_sections for header/home copy.",
+    label: "Home Page Settings",
+    helper: "विवरणहरू प्रविष्ट गर्नुहोस्।",
     table: "site_sections",
     seed: overviewSeed,
+    serialize: (rows) => serializeKeyValue(rows[0]?.metadata),
     parse: (text) => [{ slug: "home", title: "Home Page", body: text, metadata: keyValueMetadata(text) }]
   },
   about: {
     id: "about",
     label: "हाम्रो बारेमा",
-    helper: "Plain text introduction. Saved in site_sections.",
+    helper: "हाम्रो बारेमा परिचय विवरण प्रविष्ट गर्नुहोस्।",
     table: "site_sections",
     seed: aboutSeed,
+    serialize: (rows) => rows[0]?.body || "",
     parse: (text) => [{ slug: "about", title: "हाम्रो बारेमा", body: text, metadata: {} }]
   },
   staff: {
     id: "staff",
     label: "कर्मचारी",
-    helper: "name | role | email | phone | photo_url",
+    helper: "कर्मचारीको विवरण थप, सम्पादन वा हटाउनुहोस्।",
     table: "staff",
     select: "name, role, email, phone, photo_url, sort_order",
     seed: `${branchContact.chief} | ${branchContact.chiefTitle} | ${branchContact.email} | ${branchContact.phone} | /ram.jfif`,
@@ -155,7 +173,7 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   institutions: {
     id: "institutions",
     label: "स्वास्थ्य संस्था",
-    helper: "name | type | address | phone | service_time | map_url",
+    helper: "स्वास्थ्य संस्थाको सूची सम्पादन गर्नुहोस्।",
     table: "health_institutions",
     select: "name, type, address, phone, service_time, map_url, sort_order",
     seed: institutions.map((item) => [item.name, item.type, item.address, item.phone, item.serviceTime, ""].join(" | ")).join("\n"),
@@ -174,7 +192,7 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   programs: {
     id: "programs",
     label: "कार्यक्रम सेवा",
-    helper: "title | summary | icon",
+    helper: "सञ्चालित कार्यक्रम तथा सेवाहरू।",
     table: "programs",
     select: "title, summary, icon, sort_order",
     seed: programs.map((item) => [item.title, item.summary, ""].join(" | ")).join("\n"),
@@ -190,11 +208,11 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   notices: {
     id: "notices",
     label: "सूचना प्रकाशन",
-    helper: "title | category | published_at YYYY-MM-DD | body | file_url | is_featured true/false",
+    helper: "सूचना, समाचार तथा परिपत्रहरू।",
     table: "notices",
     select: "title, category, published_at, body, file_url, is_featured",
     seed: notices.map((item) => [item.title, item.category, item.date, item.body, "", "false"].join(" | ")).join("\n"),
-    serialize: (rows) => rows.map((row) => [row.title, row.category, row.published_at, row.body, row.file_url, row.is_featured].join(" | ")).join("\n"),
+    serialize: (rows) => rows.map((row) => [row.title, row.category, row.published_at, row.body, row.file_url, row.is_featured ? "true" : "false"].join(" | ")).join("\n"),
     parse: (text) =>
       parseDelimited(text).map((parts) => ({
         title: parts[0],
@@ -207,8 +225,8 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   },
   reports: {
     id: "reports",
-    label: "Data & Reports",
-    helper: "title | category | file_url. Saved as downloads with category report.",
+    label: "प्रतिवेदन (Reports)",
+    helper: "प्रतिवेदन दस्तावेजहरू। गुगल ड्राइभ लिङ्क वा PDF फाइल सिधै अपलोड गर्नुहोस्।",
     table: "downloads",
     select: "title, category, file_url, sort_order",
     seed: reportItems.map((item) => [item, "report", ""].join(" | ")).join("\n"),
@@ -223,8 +241,8 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   },
   downloads: {
     id: "downloads",
-    label: "Download Center",
-    helper: "title | category | file_url",
+    label: "डाउनलोड केन्द्र",
+    helper: "फाराम तथा कागजातहरू।",
     table: "downloads",
     select: "title, category, file_url, sort_order",
     seed: downloads.map((item) => [item.title, item.category, item.fileUrl ?? ""].join(" | ")).join("\n"),
@@ -237,18 +255,51 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
         sort_order: index
       }))
   },
+  blogs: {
+    id: "blogs",
+    label: "ब्लग लेखहरू (Blogs)",
+    helper: "स्वास्थ्य ब्लग, सन्देश तथा जानकारीमूलक लेखहरू।",
+    table: "blogs",
+    select: "id, title, slug, content, cover_image_url, published_at",
+    seed: "",
+    serialize: (rows) => rows.map((row) => [row.title, row.slug, row.content.replace(/\n/g, "<br>"), row.cover_image_url || "", row.published_at].join(" | ")).join("\n"),
+    parse: (text) =>
+      parseDelimited(text).map((parts) => ({
+        title: parts[0] ?? "",
+        slug: parts[1] ?? "",
+        content: (parts[2] ?? "").replace(/<br>/g, "\n"),
+        cover_image_url: parts[3] ?? null,
+        published_at: normalizeDate(parts[4])
+      }))
+  },
+  videos: {
+    id: "videos",
+    label: "भिडियो (Videos)",
+    helper: "यूट्यूब भिडियो लिङ्कहरू।",
+    table: "videos",
+    select: "id, title, youtube_url, sort_order",
+    seed: "",
+    serialize: (rows) => rows.map((row) => [row.title, row.youtube_url].join(" | ")).join("\n"),
+    parse: (text) =>
+      parseDelimited(text).map((parts, index) => ({
+        title: parts[0] ?? "",
+        youtube_url: parts[1] ?? "",
+        sort_order: index
+      }))
+  },
   grievance: {
     id: "grievance",
-    label: "Grievance",
-    helper: "Citizen grievance submissions appear below. Form intro text is saved in site_sections.",
+    label: "गुनासो (Grievance)",
+    helper: "गुनासो शाखाको परिचय विवरण।",
     table: "site_sections",
     seed: "नागरिक गुनासो, सुझाव र प्रतिक्रिया यहाँबाट पठाउन सकिन्छ।",
+    serialize: (rows) => rows[0]?.body || "",
     parse: (text) => [{ slug: "grievance", title: "Grievance", body: text, metadata: {} }]
   },
   emergency: {
     id: "emergency",
     label: "Emergency",
-    helper: "title | phone | details",
+    helper: "आकस्मिक सम्पर्क नम्बरहरू।",
     table: "emergency_contacts",
     select: "title, phone, details, sort_order",
     seed: emergencyContacts.map((item) => [item.title, item.phone, item.details].join(" | ")).join("\n"),
@@ -264,7 +315,7 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   gallery: {
     id: "gallery",
     label: "Gallery",
-    helper: "title | media_type photo/video | media_url | thumbnail_url",
+    helper: "ग्यालरीका तस्विरहरू।",
     table: "gallery_items",
     select: "title, media_type, media_url, thumbnail_url, sort_order",
     seed: galleryItems.map((item) => [item, "photo", "", ""].join(" | ")).join("\n"),
@@ -280,16 +331,17 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   },
   contact: {
     id: "contact",
-    label: "Contact",
-    helper: "One setting per row: key | value. Saved in site_sections.",
+    label: "Contact Info",
     table: "site_sections",
+    helper: "सम्पर्क विवरणहरू।",
     seed: contactSeed,
+    serialize: (rows) => serializeKeyValue(rows[0]?.metadata),
     parse: (text) => [{ slug: "contact", title: "Contact", body: text, metadata: keyValueMetadata(text) }]
   },
   charter: {
     id: "charter",
     label: "Citizen Charter",
-    helper: "service | fee | service_time",
+    helper: "नागरिक बडापत्रका सेवाहरू।",
     table: "citizen_charter",
     select: "service, fee, service_time, sort_order",
     seed: citizenCharter.map((item) => [item.service, item.fee, item.time].join(" | ")).join("\n"),
@@ -305,15 +357,16 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   appointments: {
     id: "appointments",
     label: "Appointments",
-    helper: "Appointment submissions appear below. Form intro text is saved in site_sections.",
+    helper: "अपोइन्टमेन्ट अनुरोधको परिचय पाठ।",
     table: "site_sections",
     seed: "नागरिकले उपलब्ध स्वास्थ्य सेवाका लागि अनलाइन appointment request पठाउन सक्छन्।",
+    serialize: (rows) => rows[0]?.body || "",
     parse: (text) => [{ slug: "appointments", title: "Appointments", body: text, metadata: {} }]
   },
   vaccination: {
     id: "vaccination",
     label: "खोप सेवा विवरण",
-    helper: "description | count_71_72 | count_72_73 | count_73_74 (Numbers or empty)",
+    helper: "खोप सेवाको आँकडा तालिका।",
     table: "vaccination_records",
     select: "description, count_71_72, count_72_73, count_73_74, sort_order",
     seed: vaccinationSeed.map((row) => [row.description, row.count_71_72 ?? "", row.count_72_73 ?? "", row.count_73_74 ?? ""].join(" | ")).join("\n"),
@@ -330,7 +383,7 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   nutrition: {
     id: "nutrition",
     label: "पोषणको अवस्था",
-    helper: "indicator | count_71_72 | count_72_73 | count_73_74 (Numbers or empty)",
+    helper: "पोषण सम्बन्धी आँकडा तालिका।",
     table: "nutrition_status",
     select: "indicator, count_71_72, count_72_73, count_73_74, sort_order",
     seed: nutritionSeed.map((row) => [row.indicator, row.count_71_72 ?? "", row.count_72_73 ?? "", row.count_73_74 ?? ""].join(" | ")).join("\n"),
@@ -347,7 +400,7 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   family_health: {
     id: "family_health",
     label: "परिवार स्वास्थ्य अवस्था",
-    helper: "ward_number | healthy | common_ill | chronic_ill | not_mentioned | total",
+    helper: "परिवार स्वास्थ्यको वडागत आँकडा।",
     table: "family_health_status",
     select: "ward_number, healthy, common_ill, chronic_ill, not_mentioned, total, sort_order",
     seed: familyHealthSeed.map((row) => [row.ward_number, row.healthy ?? "", row.common_ill ?? "", row.chronic_ill ?? "", row.not_mentioned ?? "", row.total ?? ""].join(" | ")).join("\n"),
@@ -372,6 +425,143 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   }
 };
 
+type FieldConfig = {
+  name: string;
+  label: string;
+  type: "text" | "textarea" | "number" | "boolean" | "date" | "file" | "image" | "rich-text";
+};
+
+const moduleFields: Record<ModuleId, FieldConfig[]> = {
+  home: [
+    { name: "municipality", label: "गाउँपालिका नाम (Municipality Name)", type: "text" },
+    { name: "office", label: "कार्यालय नाम (Office Name)", type: "text" },
+    { name: "provinceLine", label: "प्रदेश र जिल्ला (Province & District)", type: "text" },
+    { name: "slogan", label: "नारा (Slogan)", type: "text" }
+  ],
+  about: [
+    { name: "body", label: "विवरण (About Text)", type: "textarea" }
+  ],
+  contact: [
+    { name: "chief", label: "स्वास्थ्य शाखा प्रमुख (Chief Name)", type: "text" },
+    { name: "chiefTitle", label: "पद (Chief Title)", type: "text" },
+    { name: "email", label: "इमेल (Email)", type: "text" },
+    { name: "phone", label: "फोन नम्बर (Phone)", type: "text" },
+    { name: "address", label: "ठेगाना (Address)", type: "text" }
+  ],
+  staff: [
+    { name: "name", label: "नाम (Name)", type: "text" },
+    { name: "role", label: "पद (Role)", type: "text" },
+    { name: "email", label: "इमेल (Email)", type: "text" },
+    { name: "phone", label: "फोन (Phone)", type: "text" },
+    { name: "photo_url", label: "फोटो (Photo URL or Upload)", type: "image" }
+  ],
+  institutions: [
+    { name: "name", label: "संस्थाको नाम (Name)", type: "text" },
+    { name: "type", label: "संस्थाको प्रकार (Type)", type: "text" },
+    { name: "address", label: "ठेगाना (Address)", type: "text" },
+    { name: "phone", label: "सम्पर्क फोन (Phone)", type: "text" },
+    { name: "service_time", label: "सेवा समय (Service Time)", type: "text" },
+    { name: "map_url", label: "नक्सा लिङ्क (Google Map URL)", type: "text" }
+  ],
+  programs: [
+    { name: "title", label: "कार्यक्रम शीर्षक (Title)", type: "text" },
+    { name: "summary", label: "संक्षिप्त विवरण (Summary)", type: "textarea" },
+    { name: "icon", label: "आइकन (Icon Name)", type: "text" }
+  ],
+  notices: [
+    { name: "title", label: "सूचना शीर्षक (Title)", type: "text" },
+    { name: "category", label: "विधा (Category)", type: "text" },
+    { name: "published_at", label: "प्रकाशन मिति (Published Date)", type: "date" },
+    { name: "body", label: "सूचना विवरण (Body Description)", type: "textarea" },
+    { name: "file_url", label: "फाइल लिङ्क वा अपलोड (File URL/Upload)", type: "file" },
+    { name: "is_featured", label: "प्रमुख सूचना हो? (Is Featured)", type: "boolean" }
+  ],
+  reports: [
+    { name: "title", label: "प्रतिवेदन शीर्षक (Report Title)", type: "text" },
+    { name: "category", label: "विधा (Category)", type: "text" },
+    { name: "file_url", label: "फाइल लिङ्क वा अपलोड (Drive/Direct Link)", type: "file" }
+  ],
+  downloads: [
+    { name: "title", label: "डाउनलोड फाइल शीर्षक (Title)", type: "text" },
+    { name: "category", label: "विधा (Category)", type: "text" },
+    { name: "file_url", label: "फाइल लिङ्क वा अपलोड (File URL/Upload)", type: "file" }
+  ],
+  blogs: [
+    { name: "title", label: "ब्लग शीर्षक (Title)", type: "text" },
+    { name: "slug", label: "स्लग (Slug - English only, e.g. clean-health)", type: "text" },
+    { name: "cover_image_url", label: "कभर चित्र (Cover Image URL/Upload)", type: "image" },
+    { name: "published_at", label: "प्रकाशन मिति (Date)", type: "date" },
+    { name: "content", label: "ब्लग विवरण (Content)", type: "rich-text" }
+  ],
+  videos: [
+    { name: "title", label: "भिडियो शीर्षक (Title)", type: "text" },
+    { name: "youtube_url", label: "यूट्यूब लिङ्क (YouTube URL)", type: "text" }
+  ],
+  grievance: [
+    { name: "body", label: "गुनासो शाखा परिचय (Intro Text)", type: "textarea" }
+  ],
+  emergency: [
+    { name: "title", label: "शीर्षक (Title)", type: "text" },
+    { name: "phone", label: "फोन नम्बर (Phone)", type: "text" },
+    { name: "details", label: "थप विवरण (Details)", type: "text" }
+  ],
+  gallery: [
+    { name: "title", label: "ग्यालरी शीर्षक (Title)", type: "text" },
+    { name: "media_type", label: "प्रकार (photo/video)", type: "text" },
+    { name: "media_url", label: "मिडिया लिङ्क (Media URL)", type: "text" },
+    { name: "thumbnail_url", label: "थम्बनेल लिङ्क (Thumbnail URL)", type: "text" }
+  ],
+  charter: [
+    { name: "service", label: "सेवा विवरण (Service)", type: "text" },
+    { name: "fee", label: "शुल्क (Fee)", type: "text" },
+    { name: "service_time", label: "समय (Time Taken)", type: "text" }
+  ],
+  appointments: [
+    { name: "body", label: "अपोइन्टमेन्ट परिचय (Intro Text)", type: "textarea" }
+  ],
+  vaccination: [
+    { name: "description", label: "विवरण (Vaccine Name)", type: "text" },
+    { name: "count_71_72", label: "आ.व. ०७१/०७२ संख्या", type: "number" },
+    { name: "count_72_73", label: "आ.व. ०७२/०७३ संख्या", type: "number" },
+    { name: "count_73_74", label: "आ.व. ०७३/०७४ संख्या", type: "number" }
+  ],
+  nutrition: [
+    { name: "indicator", label: "सूचकांक (Indicator)", type: "text" },
+    { name: "count_71_72", label: "आ.व. ०७१/०७२ संख्या", type: "number" },
+    { name: "count_72_73", label: "आ.व. ०७२/०७३ संख्या", type: "number" },
+    { name: "count_73_74", label: "आ.व. ०७३/०७४ संख्या", type: "number" }
+  ],
+  family_health: [
+    { name: "ward_number", label: "वडा नम्बर (Ward Number)", type: "text" },
+    { name: "healthy", label: "स्वस्थ संख्या", type: "number" },
+    { name: "common_ill", label: "सामान्य रोगी संख्या", type: "number" },
+    { name: "chronic_ill", label: "दीर्घ रोगी संख्या", type: "number" },
+    { name: "not_mentioned", label: "उल्लेख नभएको संख्या", type: "number" },
+    { name: "total", label: "जम्मा संख्या", type: "number" }
+  ],
+  change_password: []
+};
+
+async function handleFileUpload(file: File): Promise<string | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Math.random().toString(36).slice(2)}-${Date.now()}.${fileExt}`;
+    const { data, error } = await supabase.storage.from("uploads").upload(fileName, file);
+    if (error) {
+      console.error("Supabase Storage Error:", error);
+      return null;
+    }
+    const { data: publicUrlData } = supabase.storage.from("uploads").getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+  } catch (err) {
+    console.error("File upload crash:", err);
+    return null;
+  }
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [active, setActive] = useState<ModuleId>("home");
@@ -382,6 +572,12 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [grievances, setGrievances] = useState<Submission[]>([]);
   const [appointments, setAppointments] = useState<Submission[]>([]);
+
+  // Visual Editor State
+  const [editingItems, setEditingItems] = useState<any[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null); // null = not editing; -1 = adding; >=0 = editing index
+  const [formState, setFormState] = useState<Record<string, any>>({});
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
 
   const config = moduleConfigs[active];
 
@@ -404,6 +600,14 @@ export default function AdminPage() {
     }
     boot();
   }, [router]);
+
+  // Sync editingItems when moduleText or active changes
+  useEffect(() => {
+    const parsed = config.parse(moduleText[active]);
+    setEditingItems(parsed);
+    setEditingIndex(null);
+    setFormState({});
+  }, [active, moduleText]);
 
   const moduleCounts = useMemo(
     () => ({
@@ -433,8 +637,8 @@ export default function AdminPage() {
       Object.values(moduleConfigs)
         .filter((item) => item.table && item.table !== "site_sections" && item.select)
         .map(async (item) => {
-          const { data } = await supabase.from(item.table!).select(item.select!).order("sort_order", { ascending: true });
-          if (data?.length && item.serialize) updates[item.id] = item.serialize(data as unknown as Record<string, unknown>[]);
+          const { data } = await supabase.from(item.table!).select(item.select!).order("created_at", { ascending: true });
+          if (data?.length && item.serialize) updates[item.id] = item.serialize(data as any[]);
         })
     );
 
@@ -452,6 +656,41 @@ export default function AdminPage() {
 
     if (grievanceResult.data) setGrievances(grievanceResult.data);
     if (appointmentResult.data) setAppointments(appointmentResult.data);
+  }
+
+  function updateEditingItems(newItems: any[]) {
+    setEditingItems(newItems);
+    let serialized = "";
+    if (config.serialize) {
+      serialized = config.serialize(newItems);
+    } else {
+      if (newItems.length > 0) {
+        serialized = newItems[0].body || "";
+      }
+    }
+    setModuleText((current) => ({ ...current, [active]: serialized }));
+  }
+
+  // Handle key-value editing for home/contact directly
+  function handleKeyValueChange(key: string, value: string) {
+    const newItems = [...editingItems];
+    if (newItems.length === 0) {
+      newItems.push({ slug: active, title: config.label, body: "", metadata: {} });
+    }
+    const meta = { ...newItems[0].metadata };
+    meta[key] = value;
+    newItems[0].metadata = meta;
+    updateEditingItems(newItems);
+  }
+
+  // Handle plain text editing for about/grievance/appointments
+  function handlePlainTextChange(value: string) {
+    const newItems = [...editingItems];
+    if (newItems.length === 0) {
+      newItems.push({ slug: active, title: config.label, body: "", metadata: {} });
+    }
+    newItems[0].body = value;
+    updateEditingItems(newItems);
   }
 
   async function saveModule(event: FormEvent<HTMLFormElement>) {
@@ -475,6 +714,7 @@ export default function AdminPage() {
       return;
     }
 
+    // Tabular table deletion & insertion
     let deleteQuery = supabase.from(config.table).delete();
     if (active === "reports") {
       deleteQuery = deleteQuery.eq("category", "report");
@@ -498,7 +738,7 @@ export default function AdminPage() {
       }
     }
 
-    setStatus(`${config.label} saved to ${config.table}.`);
+    setStatus(`${config.label} saved to database.`);
     await loadEditableContent();
   }
 
@@ -525,9 +765,41 @@ export default function AdminPage() {
     router.push("/admin/login");
   }
 
+  // Handle uploading files/images inside forms
+  async function onFileSelect(event: React.ChangeEvent<HTMLInputElement>, fieldName: string) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingField(fieldName);
+    const uploadedUrl = await handleFileUpload(file);
+    setUploadingField(null);
+
+    if (uploadedUrl) {
+      setFormState((prev) => ({ ...prev, [fieldName]: uploadedUrl }));
+    } else {
+      alert("फाइल अपलोड गर्न असफल भयो।");
+    }
+  }
+
+  function handleSaveForm(event: FormEvent) {
+    event.preventDefault();
+    const next = [...editingItems];
+    if (editingIndex === -1) {
+      next.push(formState);
+    } else if (editingIndex !== null) {
+      next[editingIndex] = formState;
+    }
+    updateEditingItems(next);
+    setEditingIndex(null);
+    setFormState({});
+  }
+
   if (checking) {
     return <main className="grid min-h-screen place-items-center bg-slate-100 font-bold text-[var(--civic-navy)]">Checking session...</main>;
   }
+
+  const isKeyValueModule = active === "home" || active === "contact";
+  const isPlainTextModule = active === "about" || active === "grievance" || active === "appointments";
 
   return (
     <main className="min-h-screen bg-slate-100">
@@ -576,7 +848,7 @@ export default function AdminPage() {
           </div>
 
           {/* Sidebar Nav for Desktop */}
-          <nav className="hidden lg:grid gap-1 p-3">
+          <nav className="hidden lg:grid gap-1 p-3 max-h-[calc(100vh-80px)] overflow-y-auto">
             {sections.map((section) => {
               const Icon = section.icon;
               return (
@@ -625,74 +897,337 @@ export default function AdminPage() {
             {active === "change_password" ? (
               <PasswordChangeForm />
             ) : (
-              <>
-                {/* Stats Dashboard Grid */}
-                <div className="mb-5 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
-                  {[
-                    ["Notices", moduleCounts.notices],
-                    ["Institutions", moduleCounts.institutions],
-                    ["Programs", moduleCounts.programs],
-                    ["Grievances", moduleCounts.grievances],
-                    ["Appointments", moduleCounts.appointments]
-                  ].map(([label, value]) => (
-                    <div key={label} className="civic-card p-4">
-                      <p className="text-sm font-bold text-slate-500">{label}</p>
-                      <p className="mt-1 text-2xl lg:text-3xl font-extrabold text-[var(--civic-navy)]">{value}</p>
-                    </div>
-                  ))}
-                </div>
+              <div className="grid gap-6">
+                {/* Stats Dashboard Grid (Only shown when not editing items) */}
+                {editingIndex === null && !isKeyValueModule && !isPlainTextModule && (
+                  <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+                    {[
+                      ["Notices", moduleCounts.notices],
+                      ["Institutions", moduleCounts.institutions],
+                      ["Programs", moduleCounts.programs],
+                      ["Grievances", moduleCounts.grievances],
+                      ["Appointments", moduleCounts.appointments]
+                    ].map(([label, value]) => (
+                      <div key={label} className="civic-card p-4 bg-white">
+                        <p className="text-sm font-bold text-slate-500">{label}</p>
+                        <p className="mt-1 text-2xl lg:text-3xl font-extrabold text-[var(--civic-navy)]">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                {/* Submissions Section */}
-                <div className="mb-5 grid gap-4 xl:grid-cols-2">
-                  <SubmissionList
-                    title="Latest Grievances"
-                    table="grievances"
-                    items={grievances}
-                    empty="No grievances yet."
-                    statuses={["new", "in_review", "resolved", "closed"]}
-                    onStatusChange={updateSubmissionStatus}
-                  />
-                  <SubmissionList
-                    title="Latest Appointments"
-                    table="appointments"
-                    items={appointments}
-                    empty="No appointment requests yet."
-                    statuses={["requested", "confirmed", "completed", "cancelled"]}
-                    onStatusChange={updateSubmissionStatus}
-                  />
-                </div>
+                {/* Submissions Section (Only shown when not editing on Home) */}
+                {editingIndex === null && active === "home" && (
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    <SubmissionList
+                      title="Latest Grievances"
+                      table="grievances"
+                      items={grievances}
+                      empty="No grievances yet."
+                      statuses={["new", "in_review", "resolved", "closed"]}
+                      onStatusChange={updateSubmissionStatus}
+                    />
+                    <SubmissionList
+                      title="Latest Appointments"
+                      table="appointments"
+                      items={appointments}
+                      empty="No appointment requests yet."
+                      statuses={["requested", "confirmed", "completed", "cancelled"]}
+                      onStatusChange={updateSubmissionStatus}
+                    />
+                  </div>
+                )}
 
-                {/* Editor Card */}
-                <form onSubmit={saveModule} className="civic-card p-4 lg:p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+                {/* Form Editor Card */}
+                <form onSubmit={saveModule} className="civic-card p-4 lg:p-5 bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
                     <div>
                       <h2 className="text-lg lg:text-xl font-extrabold text-[var(--civic-navy)]">{config.label} Editor</h2>
                       <p className="mt-1 text-xs lg:text-sm font-semibold text-slate-500">{config.helper}</p>
                     </div>
-                    <button className="inline-flex items-center gap-2 rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white text-sm">
-                      <Save size={18} /> Save Module
-                    </button>
+                    {editingIndex === null && (
+                      <button className="inline-flex items-center gap-2 rounded bg-[var(--civic-blue)] px-4 py-2 font-bold text-white text-xs hover:bg-opacity-90 transition-colors cursor-pointer">
+                        <Save size={16} /> Save to Database
+                      </button>
+                    )}
                   </div>
 
-                  <textarea
-                    className="admin-input mt-5 min-h-[360px] font-mono text-sm leading-7"
-                    value={moduleText[active]}
-                    onChange={(event) => setModuleText((current) => ({ ...current, [active]: event.target.value }))}
-                  />
+                  {/* KEY-VALUE FIELDS EDITOR (Home / Contact) */}
+                  {isKeyValueModule && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {moduleFields[active].map((field) => {
+                        const meta = editingItems[0]?.metadata || {};
+                        return (
+                          <label key={field.name} className="admin-label">
+                            {field.label}
+                            <input
+                              type="text"
+                              className="admin-input"
+                              value={meta[field.name] || ""}
+                              onChange={(e) => handleKeyValueChange(field.name, e.target.value)}
+                            />
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <button type="button" onClick={loadEditableContent} className="rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700 text-sm">
-                      Reload from Database
-                    </button>
-                    {status && <p className="font-semibold text-slate-600 text-sm">{status}</p>}
-                  </div>
+                  {/* PLAIN TEXT EDITOR (About / Grievance Intro / Appointment Intro) */}
+                  {isPlainTextModule && (
+                    <div className="grid gap-4">
+                      {moduleFields[active].map((field) => (
+                        <label key={field.name} className="admin-label">
+                          {field.label}
+                          <textarea
+                            className="admin-input min-h-[250px] font-medium leading-relaxed"
+                            value={editingItems[0]?.body || ""}
+                            onChange={(e) => handlePlainTextChange(e.target.value)}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* LIST & ITEMIZED CARD BUILDER (Staff, Institution, Notice, etc.) */}
+                  {!isKeyValueModule && !isPlainTextModule && (
+                    <div>
+                      {editingIndex === null ? (
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-bold text-slate-600 text-sm">सूचीबद्ध विवरणहरू (Items List):</h3>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const defaults = Object.fromEntries(
+                                  moduleFields[active].map((f) => [
+                                    f.name,
+                                    f.type === "boolean" ? false : f.type === "number" ? 0 : ""
+                                  ])
+                                );
+                                setFormState(defaults);
+                                setEditingIndex(-1);
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded bg-[var(--civic-red)] px-3 py-1.5 text-xs font-bold text-white hover:bg-opacity-90 cursor-pointer"
+                            >
+                              <Plus size={14} /> नयाँ थप्नुहोस् (Add Item)
+                            </button>
+                          </div>
+
+                          {editingItems.length === 0 ? (
+                            <p className="text-center py-6 text-sm font-semibold text-slate-400 bg-slate-50 border border-dashed rounded-md">
+                              कुनै पनि विवरण थपिएको छैन।
+                            </p>
+                          ) : (
+                            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                              {editingItems.map((item, index) => (
+                                <div key={index} className="border border-slate-200 rounded p-4 flex flex-col justify-between hover:bg-slate-50/40 relative">
+                                  <div>
+                                    <p className="font-extrabold text-[var(--civic-navy)] text-sm mb-1 leading-snug">
+                                      {item.title || item.name || item.service || item.description || item.indicator || `वडा ${item.ward_number}` || `Item ${index + 1}`}
+                                    </p>
+                                    <p className="text-xs text-slate-500 line-clamp-2">
+                                      {item.role || item.type || item.category || item.summary || item.details || item.fee || item.youtube_url || ""}
+                                    </p>
+                                  </div>
+                                  <div className="mt-4 border-t border-slate-100 pt-3 flex justify-end gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setFormState({ ...item });
+                                        setEditingIndex(index);
+                                      }}
+                                      className="inline-flex items-center gap-1 text-xs font-bold text-[var(--civic-blue)] hover:underline focus:outline-none"
+                                    >
+                                      <Edit size={12} /> सम्पादन
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const next = editingItems.filter((_, i) => i !== index);
+                                        updateEditingItems(next);
+                                      }}
+                                      className="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:underline focus:outline-none"
+                                    >
+                                      <Trash2 size={12} /> हटाउनुहोस्
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        // Form to Add or Edit a single item
+                        <div className="bg-slate-50 border border-slate-200 rounded-md p-4 animate-fade-in">
+                          <h3 className="font-bold text-[var(--civic-navy)] text-sm mb-4 border-b border-slate-200 pb-2">
+                            {editingIndex === -1 ? "नयाँ विवरण प्रविष्टि (Add Item)" : "विवरण सम्पादन (Edit Item)"}
+                          </h3>
+                          <div className="grid gap-4 sm:grid-cols-2 mb-5">
+                            {moduleFields[active].map((field) => {
+                              if (field.type === "textarea") {
+                                return (
+                                  <label key={field.name} className="admin-label sm:col-span-2">
+                                    {field.label}
+                                    <textarea
+                                      className="admin-input min-h-20"
+                                      value={formState[field.name] || ""}
+                                      onChange={(e) => setFormState((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                                      required
+                                    />
+                                  </label>
+                                );
+                              }
+                              if (field.type === "rich-text") {
+                                return (
+                                  <div key={field.name} className="admin-label sm:col-span-2">
+                                    <span>{field.label}</span>
+                                    <RichTextEditor
+                                      value={formState[field.name] || ""}
+                                      onChange={(val) => setFormState((prev) => ({ ...prev, [field.name]: val }))}
+                                    />
+                                  </div>
+                                );
+                              }
+                              if (field.type === "boolean") {
+                                return (
+                                  <label key={field.name} className="flex items-center gap-2 font-bold text-slate-700 text-sm mt-6 select-none cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(formState[field.name])}
+                                      onChange={(e) => setFormState((prev) => ({ ...prev, [field.name]: e.target.checked }))}
+                                      className="h-4 w-4 rounded border-slate-300 text-[var(--civic-blue)]"
+                                    />
+                                    {field.label}
+                                  </label>
+                                );
+                              }
+                              if (field.type === "image" || field.type === "file") {
+                                return (
+                                  <div key={field.name} className="admin-label sm:col-span-2">
+                                    <span>{field.label}</span>
+                                    <div className="flex gap-2">
+                                      <input
+                                        type="text"
+                                        className="admin-input flex-1"
+                                        placeholder="Paste Link or Upload file"
+                                        value={formState[field.name] || ""}
+                                        onChange={(e) => setFormState((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                                      />
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        id={`upload-${field.name}`}
+                                        onChange={(e) => onFileSelect(e, field.name)}
+                                        accept={field.type === "image" ? "image/*" : "application/pdf,.doc,.docx,.xls,.xlsx"}
+                                      />
+                                      <label
+                                        htmlFor={`upload-${field.name}`}
+                                        className="rounded bg-slate-200 border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-300 select-none flex items-center justify-center shrink-0"
+                                      >
+                                        {uploadingField === field.name ? "Uploading..." : "Upload File"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <label key={field.name} className="admin-label">
+                                  {field.label}
+                                  <input
+                                    type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                                    className="admin-input"
+                                    value={formState[field.name] === undefined ? "" : formState[field.name]}
+                                    onChange={(e) => setFormState((prev) => ({ ...prev, [field.name]: field.type === "number" ? Number(e.target.value) : e.target.value }))}
+                                    required
+                                  />
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={handleSaveForm}
+                              className="rounded bg-[var(--civic-blue)] px-4 py-2 font-bold text-white text-xs hover:bg-opacity-90 cursor-pointer"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingIndex(null);
+                                setFormState({});
+                              }}
+                              className="rounded border border-slate-300 bg-white px-4 py-2 font-bold text-slate-700 text-xs hover:bg-slate-50 cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {status && (
+                    <div className="mt-4 flex items-center gap-2 bg-slate-50 border border-slate-200 p-3 rounded text-sm font-semibold text-slate-700">
+                      <Check size={16} className="text-green-600" />
+                      <span>{status}</span>
+                    </div>
+                  )}
                 </form>
-              </>
+              </div>
             )}
           </div>
         </section>
       </div>
     </main>
+  );
+}
+
+function RichTextEditor({ value, onChange }: { value: string; onChange: (val: string) => void }) {
+  const editorId = "rich-editor";
+  return (
+    <div className="border border-slate-300 rounded-md overflow-hidden bg-white">
+      {/* Toolbar */}
+      <div className="flex flex-wrap gap-1 bg-slate-100 border-b border-slate-300 p-2">
+        {["bold", "italic", "underline", "justifyLeft", "justifyCenter", "justifyRight", "insertUnorderedList", "insertOrderedList"].map((cmd) => (
+          <button
+            key={cmd}
+            type="button"
+            onClick={() => {
+              document.execCommand(cmd, false);
+              const el = document.getElementById(editorId);
+              if (el) onChange(el.innerHTML);
+            }}
+            className="px-2 py-1 bg-white hover:bg-slate-200 border border-slate-300 rounded text-xs font-bold focus:outline-none"
+          >
+            {cmd.replace("insert", "").replace("justify", "")}
+          </button>
+        ))}
+        {["h1", "h2", "h3", "p"].map((tag) => (
+          <button
+            key={tag}
+            type="button"
+            onClick={() => {
+              document.execCommand("formatBlock", false, `<${tag}>`);
+              const el = document.getElementById(editorId);
+              if (el) onChange(el.innerHTML);
+            }}
+            className="px-2 py-1 bg-white hover:bg-slate-200 border border-slate-300 rounded text-xs font-bold uppercase focus:outline-none"
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+      {/* Editable Area */}
+      <div
+        id={editorId}
+        contentEditable
+        className="p-4 min-h-[200px] outline-none max-h-[350px] overflow-y-auto"
+        dangerouslySetInnerHTML={{ __html: value }}
+        onInput={(e) => onChange(e.currentTarget.innerHTML)}
+      />
+    </div>
   );
 }
 
@@ -712,7 +1247,7 @@ function SubmissionList({
   onStatusChange: (table: "grievances" | "appointments", id: string, nextStatus: string) => void;
 }) {
   return (
-    <div className="civic-card p-5">
+    <div className="civic-card p-5 bg-white">
       <h2 className="font-extrabold text-[var(--civic-navy)]">{title}</h2>
       <div className="mt-4 space-y-3">
         {items.length === 0 && <p className="text-sm font-semibold text-slate-500">{empty}</p>}
@@ -737,31 +1272,6 @@ function SubmissionList({
       </div>
     </div>
   );
-}
-
-function parseDelimited(text: string) {
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.split("|").map((part) => emptyToNull(part.trim()) as string));
-}
-
-function keyValueMetadata(text: string) {
-  return Object.fromEntries(parseDelimited(text).map(([key, value]) => [key, value ?? ""]));
-}
-
-function emptyToNull(value: string) {
-  return value === "" ? null : value;
-}
-
-function normalizeDate(value: string | null | undefined) {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return new Date().toISOString().slice(0, 10);
-  return value;
-}
-
-function rowCount(text: string) {
-  return text.split("\n").filter((line) => line.trim()).length;
 }
 
 function PasswordChangeForm() {
@@ -853,4 +1363,29 @@ function PasswordChangeForm() {
       </div>
     </form>
   );
+}
+
+function parseDelimited(text: string) {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.split("|").map((part) => emptyToNull(part.trim()) as string));
+}
+
+function keyValueMetadata(text: string) {
+  return Object.fromEntries(parseDelimited(text).map(([key, value]) => [key, value ?? ""]));
+}
+
+function emptyToNull(value: string) {
+  return value === "" ? null : value;
+}
+
+function normalizeDate(value: string | null | undefined) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return new Date().toISOString().slice(0, 10);
+  return value;
+}
+
+function rowCount(text: string) {
+  return text.split("\n").filter((line) => line.trim()).length;
 }
