@@ -9,6 +9,8 @@ export type Notice = {
 export type Program = {
   title: string;
   summary: string;
+  content?: string;
+  icon?: string;
 };
 
 export type Institution = {

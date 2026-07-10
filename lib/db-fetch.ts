@@ -149,7 +149,7 @@ export async function fetchPrograms() {
   try {
     const { data } = await supabase
       .from("programs")
-      .select("title, summary, icon")
+      .select("title, summary, icon, content")
       .order("sort_order", { ascending: true });
 
     if (data && data.length > 0) return data;

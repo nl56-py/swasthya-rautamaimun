@@ -113,7 +113,8 @@ const overviewSeed = [
   `municipality | ${branchContact.municipality}`,
   `office | ${branchContact.office}`,
   `provinceLine | ${branchContact.provinceLine}`,
-  `slogan | ${branchContact.slogan}`
+  `slogan | ${branchContact.slogan}`,
+  `map_url | https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d113824.31828551717!2d86.72146950294902!3d26.934898126135246!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ef692b15e44ec7%3A0xe2128e469c470a7d!2sRautamai!5e0!3m2!1sen!2snp!4v1720612345678!5m2!1sen!2snp`
 ].join("\n");
 
 const aboutSeed =
@@ -194,14 +195,15 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
     label: "कार्यक्रम सेवा",
     helper: "सञ्चालित कार्यक्रम तथा सेवाहरू।",
     table: "programs",
-    select: "title, summary, icon, sort_order",
-    seed: programs.map((item) => [item.title, item.summary, ""].join(" | ")).join("\n"),
-    serialize: (rows) => rows.map((row) => [row.title, row.summary, row.icon].join(" | ")).join("\n"),
+    select: "title, summary, icon, content, sort_order",
+    seed: programs.map((item) => [item.title, item.summary, "", ""].join(" | ")).join("\n"),
+    serialize: (rows) => rows.map((row) => [row.title, row.summary, row.icon || "", row.content || ""].join(" | ")).join("\n"),
     parse: (text) =>
       parseDelimited(text).map((parts, index) => ({
         title: parts[0],
         summary: parts[1] ?? "",
         icon: parts[2] ?? null,
+        content: parts[3] ?? null,
         sort_order: index
       }))
   },
@@ -436,7 +438,8 @@ const moduleFields: Record<ModuleId, FieldConfig[]> = {
     { name: "municipality", label: "गाउँपालिका नाम (Municipality Name)", type: "text" },
     { name: "office", label: "कार्यालय नाम (Office Name)", type: "text" },
     { name: "provinceLine", label: "प्रदेश र जिल्ला (Province & District)", type: "text" },
-    { name: "slogan", label: "नारा (Slogan)", type: "text" }
+    { name: "slogan", label: "नारा (Slogan)", type: "text" },
+    { name: "map_url", label: "गुगल नक्सा (Google Map Embed URL)", type: "text" }
   ],
   about: [
     { name: "body", label: "विवरण (About Text)", type: "textarea" }
@@ -466,7 +469,8 @@ const moduleFields: Record<ModuleId, FieldConfig[]> = {
   programs: [
     { name: "title", label: "कार्यक्रम शीर्षक (Title)", type: "text" },
     { name: "summary", label: "संक्षिप्त विवरण (Summary)", type: "textarea" },
-    { name: "icon", label: "आइकन (Icon Name)", type: "text" }
+    { name: "icon", label: "आइकन (Icon Name)", type: "text" },
+    { name: "content", label: "विस्तृत विवरण (Full Content Page)", type: "rich-text" }
   ],
   notices: [
     { name: "title", label: "सूचना शीर्षक (Title)", type: "text" },

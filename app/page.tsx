@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { SubmissionForm } from "@/components/submission-form";
+import { InstitutionMap } from "@/components/institution-map";
 import { slugify } from "@/lib/slug";
 import {
   fetchBranchContact,
@@ -34,7 +35,6 @@ import {
 
 export default async function HomePage() {
   const branchContact = await fetchBranchContact();
-  const aboutText = await fetchAboutText();
   const notices = await fetchNotices();
   const institutions = await fetchInstitutions();
   const programs = await fetchPrograms();
@@ -51,10 +51,10 @@ export default async function HomePage() {
       <SiteHeader />
       <Hero branchContact={branchContact} emergencyContacts={emergencyContacts} />
       <NoticeNews notices={notices} />
-      <AboutSection aboutText={aboutText} branchContact={branchContact} />
-      <InstitutionSection institutions={institutions} />
+      <BlogsPreviewSection blogs={blogs} />
+      <VideosPreviewSection videos={videos} />
+      <InstitutionSection institutions={institutions} branchContact={branchContact} />
       <ProgramsSection programs={programs} />
-      <BlogVideoSection blogs={blogs} videos={videos} />
       <ReportsDownloads reports={reports} downloads={downloads} />
       <FormsSection />
       <EmergencySection emergencyContacts={emergencyContacts} />
@@ -149,40 +149,99 @@ function NoticeNews({ notices }: { notices: any[] }) {
   );
 }
 
-function AboutSection({ aboutText, branchContact }: { aboutText: string; branchContact: any }) {
+function BlogsPreviewSection({ blogs }: { blogs: any[] }) {
+  if (blogs.length === 0) return null;
   return (
-    <section id="about" className="bg-white py-10">
-      <div className="container-civic grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
-          <h2 className="section-title">हाम्रो बारेमा</h2>
-          <p className="mt-5 leading-8 text-slate-700">{aboutText}</p>
+    <section className="py-10 bg-slate-50 border-y border-slate-200">
+      <div className="container-civic">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="section-title">स्वास्थ्य सन्देश तथा ब्लगहरू</h2>
+          <Link href="/blogs" className="rounded-md bg-[var(--civic-blue)] px-4 py-2 text-xs font-bold text-white hover:bg-opacity-90">
+            सबै ब्लगहरू हेर्नुहोस् &rarr;
+          </Link>
         </div>
-        <div className="civic-card p-5">
-          <h3 className="font-extrabold text-[var(--civic-navy)]">संगठन संरचना</h3>
-          <div className="mt-4 grid gap-3 text-center sm:grid-cols-3">
-            {["गाउँपालिका", "स्वास्थ्य शाखा", "स्वास्थ्य संस्था/सेवा केन्द्र"].map((item) => (
-              <div key={item} className="rounded border border-slate-200 bg-slate-50 p-4 font-bold">{item}</div>
-            ))}
-          </div>
-          <div className="mt-4 rounded-md bg-[var(--civic-blue)] p-4 text-white">
-            <p className="font-bold">कर्मचारी विवरण तथा सम्पर्क</p>
-            <p className="mt-1">{branchContact.chief} - {branchContact.chiefTitle}</p>
-            <p>{branchContact.phone} | {branchContact.email}</p>
-          </div>
+        {/* Horizontal scroll on desktop, vertical list on mobile */}
+        <div className="flex flex-col md:flex-row gap-6 md:overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300">
+          {blogs.map((blog) => (
+            <article key={blog.id} className="civic-card bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full md:w-[320px] md:shrink-0 border border-slate-200">
+              {blog.cover_image_url && (
+                <div className="relative aspect-[16/10] bg-slate-100 shrink-0">
+                  <img src={blog.cover_image_url} alt={blog.title} className="h-full w-full object-cover" />
+                </div>
+              )}
+              <div className="p-4 flex-1 flex flex-col justify-between">
+                <div>
+                  <p className="text-[11px] text-slate-500 font-semibold mb-2">
+                    {new Date(blog.published_at).toLocaleDateString("ne-NP")}
+                  </p>
+                  <h3 className="font-extrabold text-sm text-[var(--civic-navy)] line-clamp-2 hover:text-[var(--civic-red)] transition-colors leading-snug">
+                    <Link href={`/blogs/${blog.slug}`}>{blog.title}</Link>
+                  </h3>
+                </div>
+                <Link href={`/blogs/${blog.slug}`} className="mt-3 inline-block font-bold text-xs text-[var(--civic-blue)] hover:underline">
+                  थप पढ्नुहोस् &rarr;
+                </Link>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function InstitutionSection({ institutions }: { institutions: any[] }) {
+function VideosPreviewSection({ videos }: { videos: any[] }) {
+  const featuredVideos = videos.slice(0, 3);
+  if (featuredVideos.length === 0) return null;
+  return (
+    <section className="py-10 bg-white border-b border-slate-200">
+      <div className="container-civic">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="section-title">स्वास्थ्य सचेतना भिडियोहरू</h2>
+          <Link href="/videos" className="rounded-md bg-[var(--civic-red)] px-4 py-2 text-xs font-bold text-white hover:bg-opacity-90">
+            सबै भिडियोहरू हेर्नुहोस् &rarr;
+          </Link>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {featuredVideos.map((video) => {
+            const embedUrl = getEmbedUrl(video.youtube_url);
+            return (
+              <div key={video.id} className="civic-card overflow-hidden bg-white flex flex-col h-full border border-slate-200">
+                <div className="relative aspect-video w-full bg-slate-200">
+                  {embedUrl ? (
+                    <iframe
+                      src={embedUrl}
+                      title={video.title}
+                      className="absolute inset-0 h-full w-full border-0"
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-xs text-slate-400">Preview</div>
+                  )}
+                </div>
+                <div className="p-4 flex-1 flex flex-col justify-center">
+                  <h3 className="font-extrabold text-[var(--civic-navy)] leading-snug line-clamp-2 text-sm">
+                    {video.title}
+                  </h3>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function InstitutionSection({ institutions, branchContact }: { institutions: any[]; branchContact: any }) {
   return (
     <section id="institutions" className="py-10">
       <div className="container-civic">
         <h2 className="section-title">स्वास्थ्य संस्थाहरूको विवरण</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 md:grid-cols-3 mb-6">
           {institutions.map((item) => (
-            <div key={item.name} className="civic-card p-5">
+            <div key={item.name} className="civic-card p-5 bg-white border border-slate-200">
               <MapPin className="text-[var(--civic-red)]" />
               <h3 className="mt-3 font-extrabold text-[var(--civic-navy)]">{item.name}</h3>
               <p className="text-sm font-bold text-slate-500">{item.type}</p>
@@ -192,13 +251,7 @@ function InstitutionSection({ institutions }: { institutions: any[] }) {
             </div>
           ))}
         </div>
-        <div className="civic-card mt-6 grid min-h-56 place-items-center bg-slate-100 p-6 text-center">
-          <div>
-            <MapPin className="mx-auto text-[var(--civic-blue)]" size={38} />
-            <p className="mt-3 font-extrabold text-[var(--civic-navy)]">Google Location Map</p>
-            <p className="text-sm text-slate-600">Admin panel बाट embed/map URL अद्यावधिक गर्न मिल्ने।</p>
-          </div>
-        </div>
+        <InstitutionMap institutions={institutions} branchMapUrl={branchContact.map_url} />
       </div>
     </section>
   );
@@ -310,21 +363,30 @@ function EmergencySection({ emergencyContacts }: { emergencyContacts: any[] }) {
   );
 }
 
-function GalleryContact({ galleryItems, branchContact }: { galleryItems: any[]; branchContact: any }) {
+function GalleryContact({ galleryItems, branchContact }: { galleryItems: string[]; branchContact: any }) {
+  const placeholders = ["स्वास्थ्य शिविर", "खोप अभियान", "स्वास्थ्य सचेतना भिडियो"];
+  const filteredItems = galleryItems.filter((item) => !placeholders.includes(item));
+
   return (
     <section id="gallery" className="bg-white py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[1fr_0.8fr]">
         <div>
-          <h2 className="section-title">फोटो तथा भिडियो ग्यालरी</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {galleryItems.map((item) => (
-              <div key={item} className="civic-card aspect-[4/3] overflow-hidden">
-                <div className="grid h-full place-items-center bg-slate-100 p-4 text-center font-extrabold text-[var(--civic-navy)]">
-                  {item}
+          <h2 className="section-title">स्वास्थ्य गतिविधि, शिविर तथा सचेतना ग्यालरी</h2>
+          {filteredItems.length === 0 ? (
+            <div className="mt-6 p-8 border border-dashed border-slate-300 bg-slate-50 text-slate-500 font-bold text-center rounded-md">
+              हाल कुनै फोटो तथा भिडियोहरू उपलब्ध छैनन्, चाँडै अद्यावधिक गरिनेछ।
+            </div>
+          ) : (
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {filteredItems.map((item) => (
+                <div key={item} className="civic-card aspect-[4/3] overflow-hidden">
+                  <div className="grid h-full place-items-center bg-slate-100 p-4 text-center font-extrabold text-[var(--civic-navy)]">
+                    {item}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
         <div id="contact" className="civic-card p-5">
           <h2 className="section-title">सम्पर्क गर्नुहोस्</h2>
@@ -389,102 +451,4 @@ function getEmbedUrl(url: string) {
   return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
 }
 
-function BlogVideoSection({ blogs, videos }: { blogs: any[]; videos: any[] }) {
-  const featuredBlogs = blogs.slice(0, 2);
-  const featuredVideos = videos.slice(0, 2);
-
-  if (featuredBlogs.length === 0 && featuredVideos.length === 0) return null;
-
-  return (
-    <section id="blog-video" className="py-10 bg-slate-50 border-y border-slate-200">
-      <div className="container-civic grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        {/* Blogs Column */}
-        <div>
-          <h2 className="section-title">स्वास्थ्य सन्देश तथा ब्लगहरू</h2>
-          {featuredBlogs.length === 0 ? (
-            <p className="mt-6 text-sm font-semibold text-slate-500">कुनै ब्लगहरू फेला परेनन्।</p>
-          ) : (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {featuredBlogs.map((blog) => (
-                <div key={blog.id} className="civic-card bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                  {blog.cover_image_url && (
-                    <div className="relative aspect-[16/10] bg-slate-100 shrink-0">
-                      <img src={blog.cover_image_url} alt={blog.title} className="h-full w-full object-cover" />
-                    </div>
-                  )}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-semibold mb-2">
-                        {new Date(blog.published_at).toLocaleDateString("ne-NP")}
-                      </p>
-                      <h3 className="font-extrabold text-sm text-[var(--civic-navy)] line-clamp-2 hover:text-[var(--civic-red)] transition-colors">
-                        <Link href={`/blogs/${blog.slug}`}>{blog.title}</Link>
-                      </h3>
-                    </div>
-                    <Link href={`/blogs/${blog.slug}`} className="mt-3 inline-block font-bold text-xs text-[var(--civic-blue)] hover:underline">
-                      थप पढ्नुहोस् &rarr;
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {blogs.length > 2 && (
-            <div className="mt-5 text-right">
-              <Link href="/blogs" className="inline-flex rounded bg-[var(--civic-blue)] px-4 py-2 text-xs font-bold text-white hover:bg-opacity-90">
-                सबै ब्लगहरू हेर्नुहोस् &rarr;
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Videos Column */}
-        <div>
-          <h2 className="section-title">स्वास्थ्य सचेतना भिडियोहरू</h2>
-          {featuredVideos.length === 0 ? (
-            <p className="mt-6 text-sm font-semibold text-slate-500">कुनै भिडियोहरू फेला परेनन्।</p>
-          ) : (
-            <div className="mt-6 space-y-4">
-              {featuredVideos.map((video) => {
-                const embedUrl = getEmbedUrl(video.youtube_url);
-                return (
-                  <div key={video.id} className="civic-card bg-white overflow-hidden p-3 flex gap-3">
-                    <div className="relative aspect-video w-32 bg-slate-100 shrink-0 rounded overflow-hidden">
-                      {embedUrl ? (
-                        <iframe
-                          src={embedUrl}
-                          title={video.title}
-                          className="absolute inset-0 h-full w-full border-0"
-                          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <div className="grid h-full place-items-center text-[10px] text-slate-400">Preview</div>
-                      )}
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <h3 className="font-bold text-xs text-[var(--civic-navy)] leading-snug line-clamp-2 mb-1">
-                        {video.title}
-                      </h3>
-                      <Link href="/videos" className="text-[11px] font-bold text-[var(--civic-red)] hover:underline">
-                        भिडियो हेर्नुहोस्
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {videos.length > 2 && (
-            <div className="mt-5 text-right">
-              <Link href="/videos" className="inline-flex rounded bg-[var(--civic-red)] px-4 py-2 text-xs font-bold text-white hover:bg-opacity-90">
-                सबै भिडियोहरू हेर्नुहोस् &rarr;
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
 
