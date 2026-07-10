@@ -7,7 +7,7 @@ export default async function StaffPage() {
   const staffList = await fetchStaff();
 
   return (
-    <SitePage title="प्रमुखहरु">
+    <SitePage title="कर्मचारी">
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {staffList.map((staff) => (
           <div key={staff.name} className="civic-card p-5">

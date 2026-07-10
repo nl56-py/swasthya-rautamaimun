@@ -6,7 +6,7 @@ import { Home, Menu, X } from "lucide-react";
 
 const navItems = [
   { label: "गृह पृष्ठ", href: "/" },
-  { label: "प्रमुखहरु", href: "/staff" },
+  { label: "कर्मचारी", href: "/staff" },
   { label: "स्वास्थ्य संस्था", href: "/institutions" },
   { label: "कार्यक्रम", href: "/programs" },
   { label: "प्रतिवेदन", href: "/reports" },

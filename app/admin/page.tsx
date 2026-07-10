@@ -81,7 +81,7 @@ type ModuleConfig = {
 const sections = [
   { id: "home", label: "Home Page", icon: Home },
   { id: "about", label: "हाम्रो बारेमा", icon: Users },
-  { id: "staff", label: "प्रमुखहरु", icon: Users },
+  { id: "staff", label: "कर्मचारी", icon: Users },
   { id: "institutions", label: "स्वास्थ्य संस्था", icon: Building2 },
   { id: "programs", label: "कार्यक्रम सेवा", icon: Stethoscope },
   { id: "notices", label: "सूचना प्रकाशन", icon: Megaphone },
@@ -136,7 +136,7 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   },
   staff: {
     id: "staff",
-    label: "प्रमुखहरु",
+    label: "कर्मचारी",
     helper: "name | role | email | phone | photo_url",
     table: "staff",
     select: "name, role, email, phone, photo_url, sort_order",

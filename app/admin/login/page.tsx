@@ -50,14 +50,14 @@ export default function AdminLoginPage() {
             Email
             <span className="relative">
               <Mail className="absolute left-3 top-3 text-slate-400" size={18} />
-              <input className="admin-input pl-10" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+              <input className="admin-input !pl-10" type="email" placeholder="email@example.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
             </span>
           </label>
           <label className="admin-label">
             Password
             <span className="relative">
               <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
-              <input className="admin-input pl-10" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+              <input className="admin-input !pl-10" type="password" placeholder="••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
             </span>
           </label>
           {status && <p className="rounded bg-red-50 p-3 text-sm font-semibold text-red-800 border border-red-200">{status}</p>}

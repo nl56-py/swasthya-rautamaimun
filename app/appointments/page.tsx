@@ -3,7 +3,7 @@ import { SubmissionForm } from "@/components/submission-form";
 
 export default function AppointmentsPage() {
   return (
-    <SitePage title="Online Appointment Request">
+    <SitePage title="अनलाइन अपोइन्टमेन्ट अनुरोध">
       <SubmissionForm
         endpoint="/api/appointments"
         fields={[

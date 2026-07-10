@@ -84,7 +84,7 @@ function Hero({
                 स्वास्थ्य तथ्याङ्क, आकस्मिक सेवा सूचना र नागरिक गुनासो व्यवस्थापनका कार्यहरू सञ्चालन गर्छ।
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <Link href="/appointments" className="rounded-md bg-[var(--civic-red)] px-4 py-2 font-bold text-white">Appointment Request</Link>
+                <Link href="/appointments" className="rounded-md bg-[var(--civic-red)] px-4 py-2 font-bold text-white">अपोइन्टमेन्ट अनुरोध</Link>
                 <Link href="/grievance" className="rounded-md border border-[var(--civic-blue)] px-4 py-2 font-bold text-[var(--civic-blue)]">गुनासो पठाउनुहोस्</Link>
               </div>
             </div>
@@ -129,7 +129,7 @@ function NoticeNews({ notices }: { notices: any[] }) {
           </div>
         </div>
         <div className="civic-card p-5">
-          <h2 className="section-title">Notice Board</h2>
+          <h2 className="section-title">सूचना पाटी</h2>
           <div className="mt-5 space-y-3">
             {["परिपत्र", "निर्देशिका", "कार्यविधि", "वार्षिक प्रतिवेदन", "स्वास्थ्य प्रोफाइल"].map((item) => (
               <div key={item} className="flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-3 py-3">
@@ -258,7 +258,7 @@ function FormsSection() {
         <SubmissionForm
           id="grievance-form"
           endpoint="/api/grievances"
-          title="Online Complaint Form"
+          title="अनलाइन गुनासो फाराम"
           icon={<ShieldAlert />}
           fields={[
             ["full_name", "नाम", "text", false],
@@ -270,7 +270,7 @@ function FormsSection() {
         <SubmissionForm
           id="appointment-form"
           endpoint="/api/appointments"
-          title="Online Appointment Request"
+          title="अनलाइन अपोइन्टमेन्ट अनुरोध"
           icon={<CalendarPlus />}
           fields={[
             ["full_name", "नाम", "text", true],
@@ -322,7 +322,7 @@ function GalleryContact({ galleryItems, branchContact }: { galleryItems: any[]; 
           </div>
         </div>
         <div id="contact" className="civic-card p-5">
-          <h2 className="section-title">Contact Us</h2>
+          <h2 className="section-title">सम्पर्क गर्नुहोस्</h2>
           <div className="mt-5 space-y-3 text-slate-700">
             <p className="flex gap-2"><MapPin className="text-[var(--civic-red)]" /> {branchContact.address}</p>
             <p className="flex gap-2"><Phone className="text-[var(--civic-red)]" /> {branchContact.phone}</p>
@@ -339,7 +339,7 @@ function CitizenCharter({ citizenCharter }: { citizenCharter: any[] }) {
   return (
     <section className="py-10">
       <div className="container-civic">
-        <h2 className="section-title">Citizen Charter</h2>
+        <h2 className="section-title">नागरिक बडापत्र</h2>
         <div className="civic-card mt-6 overflow-x-auto">
           <table className="w-full min-w-[680px] border-collapse text-left">
             <thead className="bg-[var(--civic-navy)] text-white">
