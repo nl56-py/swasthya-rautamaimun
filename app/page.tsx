@@ -202,12 +202,13 @@ function VideosPreviewSection({ videos }: { videos: any[] }) {
             सबै भिडियोहरू हेर्नुहोस् &rarr;
           </Link>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
           {featuredVideos.map((video) => {
             const embedUrl = getEmbedUrl(video.youtube_url);
+            const isReel = video.is_reel || video.youtube_url.includes("/share/r/") || video.youtube_url.includes("/reel/") || video.youtube_url.includes("/reels/");
             return (
-              <div key={video.id} className="civic-card overflow-hidden bg-white flex flex-col h-full border border-slate-200">
-                <div className="relative aspect-video w-full bg-slate-200">
+              <div key={video.id} className={`civic-card overflow-hidden bg-white flex flex-col border border-slate-200 ${isReel ? 'max-w-[280px] mx-auto w-full' : 'w-full'}`}>
+                <div className={`relative w-full bg-slate-200 ${isReel ? 'aspect-[9/16]' : 'aspect-video'}`}>
                   {embedUrl ? (
                     <iframe
                       src={embedUrl}
@@ -215,13 +216,14 @@ function VideosPreviewSection({ videos }: { videos: any[] }) {
                       className="absolute inset-0 h-full w-full border-0"
                       allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
+                      scrolling="no"
                     />
                   ) : (
                     <div className="grid h-full place-items-center text-xs text-slate-400">Preview</div>
                   )}
                 </div>
-                <div className="p-4 flex-1 flex flex-col justify-center">
-                  <h3 className="font-extrabold text-[var(--civic-navy)] leading-snug line-clamp-2 text-sm">
+                <div className="p-4 flex-1 flex flex-col justify-center border-t border-slate-100">
+                  <h3 className="font-extrabold text-[var(--civic-navy)] leading-snug line-clamp-2 text-xs">
                     {video.title}
                   </h3>
                 </div>
@@ -433,6 +435,10 @@ function CitizenCharter({ citizenCharter }: { citizenCharter: any[] }) {
 }
 
 function getEmbedUrl(url: string) {
+  if (!url) return null;
+  if (url.includes("facebook.com") || url.includes("fb.watch") || url.includes("fb.com")) {
+    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&t=0`;
+  }
   let videoId = "";
   try {
     const urlObj = new URL(url);

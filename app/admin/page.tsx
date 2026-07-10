@@ -277,15 +277,16 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
   videos: {
     id: "videos",
     label: "भिडियो (Videos)",
-    helper: "यूट्यूब भिडियो लिङ्कहरू।",
+    helper: "यूट्यूब वा फेसबुक भिडियो लिङ्कहरू।",
     table: "videos",
-    select: "id, title, youtube_url, sort_order",
+    select: "id, title, youtube_url, is_reel, sort_order",
     seed: "",
-    serialize: (rows) => rows.map((row) => [row.title, row.youtube_url].join(" | ")).join("\n"),
+    serialize: (rows) => rows.map((row) => [row.title, row.youtube_url, row.is_reel ? "true" : "false"].join(" | ")).join("\n"),
     parse: (text) =>
       parseDelimited(text).map((parts, index) => ({
         title: parts[0] ?? "",
         youtube_url: parts[1] ?? "",
+        is_reel: parts[2] === "true",
         sort_order: index
       }))
   },
@@ -499,7 +500,8 @@ const moduleFields: Record<ModuleId, FieldConfig[]> = {
   ],
   videos: [
     { name: "title", label: "भिडियो शीर्षक (Title)", type: "text" },
-    { name: "youtube_url", label: "यूट्यूब लिङ्क (YouTube URL)", type: "text" }
+    { name: "youtube_url", label: "भिडियो लिङ्क (YouTube or Facebook URL)", type: "text" },
+    { name: "is_reel", label: "रिल भिडियो हो? (Is Reel/Vertical Video)", type: "boolean" }
   ],
   grievance: [
     { name: "body", label: "गुनासो शाखा परिचय (Intro Text)", type: "textarea" }

@@ -387,7 +387,7 @@ export async function fetchVideos() {
   try {
     const { data } = await supabase
       .from("videos")
-      .select("id, title, youtube_url, sort_order")
+      .select("id, title, youtube_url, is_reel, sort_order")
       .order("sort_order", { ascending: true });
 
     if (data) return data;
