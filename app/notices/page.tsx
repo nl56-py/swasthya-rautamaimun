@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
-import { notices } from "@/lib/content";
+import { fetchNotices } from "@/lib/db-fetch";
 import { slugify } from "@/lib/slug";
 
-export default function NoticesPage() {
+export default async function NoticesPage() {
+  const notices = await fetchNotices();
+
   return (
     <SitePage title="सूचना तथा जानकारी">
       <div className="grid gap-4">

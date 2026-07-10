@@ -1,8 +1,10 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
-import { branchContact } from "@/lib/content";
+import { fetchBranchContact } from "@/lib/db-fetch";
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const branchContact = await fetchBranchContact();
+
   return (
     <SitePage title="सम्पर्क">
       <div className="civic-card max-w-2xl p-5">

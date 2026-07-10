@@ -27,7 +27,10 @@ import {
   institutions,
   notices,
   programs,
-  reportItems
+  reportItems,
+  vaccinationSeed,
+  nutritionSeed,
+  familyHealthSeed
 } from "@/lib/content";
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -46,7 +49,10 @@ type ModuleId =
   | "gallery"
   | "contact"
   | "charter"
-  | "appointments";
+  | "appointments"
+  | "vaccination"
+  | "nutrition"
+  | "family_health";
 
 type Submission = {
   id: string;
@@ -84,7 +90,10 @@ const sections = [
   { id: "gallery", label: "Gallery", icon: FileText },
   { id: "contact", label: "Contact", icon: Users },
   { id: "charter", label: "Citizen Charter", icon: FileText },
-  { id: "appointments", label: "Appointments", icon: CalendarPlus }
+  { id: "appointments", label: "Appointments", icon: CalendarPlus },
+  { id: "vaccination", label: "खोप सेवा विवरण", icon: FileText },
+  { id: "nutrition", label: "पोषणको अवस्था", icon: FileText },
+  { id: "family_health", label: "परिवार स्वास्थ्य अवस्था", icon: FileText }
 ] as const;
 
 const overviewSeed = [
@@ -297,6 +306,59 @@ const moduleConfigs: Record<ModuleId, ModuleConfig> = {
     table: "site_sections",
     seed: "नागरिकले उपलब्ध स्वास्थ्य सेवाका लागि अनलाइन appointment request पठाउन सक्छन्।",
     parse: (text) => [{ slug: "appointments", title: "Appointments", body: text, metadata: {} }]
+  },
+  vaccination: {
+    id: "vaccination",
+    label: "खोप सेवा विवरण",
+    helper: "description | count_71_72 | count_72_73 | count_73_74 (Numbers or empty)",
+    table: "vaccination_records",
+    select: "description, count_71_72, count_72_73, count_73_74, sort_order",
+    seed: vaccinationSeed.map((row) => [row.description, row.count_71_72 ?? "", row.count_72_73 ?? "", row.count_73_74 ?? ""].join(" | ")).join("\n"),
+    serialize: (rows) => rows.map((row) => [row.description, row.count_71_72 ?? "", row.count_72_73 ?? "", row.count_73_74 ?? ""].join(" | ")).join("\n"),
+    parse: (text) =>
+      parseDelimited(text).map((parts, index) => ({
+        description: parts[0],
+        count_71_72: parts[1] ? parseInt(parts[1], 10) : null,
+        count_72_73: parts[2] ? parseInt(parts[2], 10) : null,
+        count_73_74: parts[3] ? parseInt(parts[3], 10) : null,
+        sort_order: index
+      }))
+  },
+  nutrition: {
+    id: "nutrition",
+    label: "पोषणको अवस्था",
+    helper: "indicator | count_71_72 | count_72_73 | count_73_74 (Numbers or empty)",
+    table: "nutrition_status",
+    select: "indicator, count_71_72, count_72_73, count_73_74, sort_order",
+    seed: nutritionSeed.map((row) => [row.indicator, row.count_71_72 ?? "", row.count_72_73 ?? "", row.count_73_74 ?? ""].join(" | ")).join("\n"),
+    serialize: (rows) => rows.map((row) => [row.indicator, row.count_71_72 ?? "", row.count_72_73 ?? "", row.count_73_74 ?? ""].join(" | ")).join("\n"),
+    parse: (text) =>
+      parseDelimited(text).map((parts, index) => ({
+        indicator: parts[0],
+        count_71_72: parts[1] ? parseInt(parts[1], 10) : null,
+        count_72_73: parts[2] ? parseInt(parts[2], 10) : null,
+        count_73_74: parts[3] ? parseInt(parts[3], 10) : null,
+        sort_order: index
+      }))
+  },
+  family_health: {
+    id: "family_health",
+    label: "परिवार स्वास्थ्य अवस्था",
+    helper: "ward_number | healthy | common_ill | chronic_ill | not_mentioned | total",
+    table: "family_health_status",
+    select: "ward_number, healthy, common_ill, chronic_ill, not_mentioned, total, sort_order",
+    seed: familyHealthSeed.map((row) => [row.ward_number, row.healthy ?? "", row.common_ill ?? "", row.chronic_ill ?? "", row.not_mentioned ?? "", row.total ?? ""].join(" | ")).join("\n"),
+    serialize: (rows) => rows.map((row) => [row.ward_number, row.healthy ?? "", row.common_ill ?? "", row.chronic_ill ?? "", row.not_mentioned ?? "", row.total ?? ""].join(" | ")).join("\n"),
+    parse: (text) =>
+      parseDelimited(text).map((parts, index) => ({
+        ward_number: parts[0],
+        healthy: parts[1] ? parseInt(parts[1], 10) : null,
+        common_ill: parts[2] ? parseInt(parts[2], 10) : null,
+        chronic_ill: parts[3] ? parseInt(parts[3], 10) : null,
+        not_mentioned: parts[4] ? parseInt(parts[4], 10) : null,
+        total: parts[5] ? parseInt(parts[5], 10) : null,
+        sort_order: index
+      }))
   }
 };
 

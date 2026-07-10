@@ -1,22 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Home, Menu, Users } from "lucide-react";
-import { branchContact } from "@/lib/content";
+import { fetchBranchContact } from "@/lib/db-fetch";
 
 const navItems = [
-  { label: "परिचय", href: "/about", children: true },
-  { label: "प्रतिवेदन", href: "/reports", children: true },
-  { label: "कार्यक्रम तथा परियोजना", href: "/programs", children: true },
-  { label: "विद्युतीय सुशासन सेवा", href: "/appointments", children: true },
-  { label: "सूचना तथा जानकारी", href: "/notices", children: true },
-  { label: "घर नं. र नक्सा", href: "/institutions", children: true },
-  { label: "डाउनलोड", href: "/downloads", children: true },
-  { label: "ग्यालरी", href: "/gallery", children: true },
+  { label: "परिचय", href: "/about" },
   { label: "प्रमुखहरु", href: "/staff" },
+  { label: "स्वास्थ्य संस्था", href: "/institutions" },
+  { label: "कार्यक्रम", href: "/programs" },
+  { label: "प्रतिवेदन", href: "/reports" },
+  { label: "सूचना", href: "/notices" },
+  { label: "डाउनलोड", href: "/downloads" },
+  { label: "आकस्मिक सम्पर्क", href: "/emergency" },
+  { label: "नागरिक बडापत्र", href: "/citizen-charter" },
+  { label: "ग्यालरी", href: "/gallery" },
+  { label: "गुनासो", href: "/grievance" },
+  { label: "अपोइन्टमेन्ट", href: "/appointments" },
   { label: "सम्पर्क", href: "/contact" }
 ];
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const branchContact = await fetchBranchContact();
+
   return (
     <>
       <header className="identity-header bg-white">
@@ -35,7 +40,7 @@ export function SiteHeader() {
       </header>
       <nav className="sticky top-0 z-30 bg-[var(--civic-blue)] text-white shadow-md">
         <div className="container-civic flex items-center justify-between">
-          <div className="hidden min-w-0 flex-1 items-center md:flex">
+          <div className="hidden min-w-0 flex-1 items-center overflow-x-auto md:flex">
             <Link href="/" className="grid h-14 w-12 shrink-0 place-items-center hover:bg-white/10" aria-label="गृहपृष्ठ">
               <Home size={18} fill="currentColor" />
             </Link>
@@ -43,10 +48,9 @@ export function SiteHeader() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="inline-flex h-14 items-center gap-1 whitespace-nowrap px-3 text-[15px] font-bold hover:bg-white/10 xl:px-4"
+                className="inline-flex h-14 items-center gap-1 whitespace-nowrap px-3 text-[14px] font-bold hover:bg-white/10 xl:px-4"
               >
                 {item.label}
-                {item.children && <ChevronDown size={14} />}
               </Link>
             ))}
           </div>
@@ -62,7 +66,9 @@ export function SiteHeader() {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const branchContact = await fetchBranchContact();
+
   return (
     <footer className="bg-[var(--civic-navy)] py-8 text-white">
       <div className="container-civic flex flex-wrap items-center justify-between gap-4">
@@ -79,7 +85,7 @@ export function SiteFooter() {
   );
 }
 
-export function SitePage({ title, children }: { title: string; children: React.ReactNode }) {
+export async function SitePage({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <main>
       <SiteHeader />

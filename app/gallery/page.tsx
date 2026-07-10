@@ -1,7 +1,9 @@
 import { SitePage } from "@/components/site-chrome";
-import { galleryItems } from "@/lib/content";
+import { fetchGalleryItems } from "@/lib/db-fetch";
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const galleryItems = await fetchGalleryItems();
+
   return (
     <SitePage title="ग्यालरी">
       <div className="grid gap-4 sm:grid-cols-3">

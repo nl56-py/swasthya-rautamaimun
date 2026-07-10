@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Activity, HeartPulse } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
-import { programs } from "@/lib/content";
+import { fetchPrograms } from "@/lib/db-fetch";
 import { slugify } from "@/lib/slug";
 
-export default function ProgramsPage() {
+export default async function ProgramsPage() {
+  const programs = await fetchPrograms();
+
   return (
     <SitePage title="कार्यक्रम तथा परियोजना">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

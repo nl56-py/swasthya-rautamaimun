@@ -3,6 +3,7 @@ export type Notice = {
   category: string;
   date: string;
   body: string;
+  fileUrl?: string;
 };
 
 export type Program = {
@@ -16,6 +17,7 @@ export type Institution = {
   address: string;
   phone: string;
   serviceTime: string;
+  mapUrl?: string;
 };
 
 export type EmergencyContact = {
@@ -129,3 +131,55 @@ export const citizenCharter: CitizenCharterItem[] = [
 export const galleryItems = ["स्वास्थ्य शिविर", "खोप अभियान", "स्वास्थ्य सचेतना भिडियो"];
 
 export const reportItems = ["HMIS रिपोर्ट", "स्वास्थ्य सूचकहरू", "मासिक प्रतिवेदन", "Dashboard"];
+
+export type VaccinationRecord = {
+  description: string;
+  count_71_72: number | null;
+  count_72_73: number | null;
+  count_73_74: number | null;
+};
+
+export type NutritionStatus = {
+  indicator: string;
+  count_71_72: number | null;
+  count_72_73: number | null;
+  count_73_74: number | null;
+};
+
+export type FamilyHealthStatus = {
+  ward_number: string;
+  healthy: number | null;
+  common_ill: number | null;
+  chronic_ill: number | null;
+  not_mentioned: number | null;
+  total: number | null;
+};
+
+export const vaccinationSeed: VaccinationRecord[] = [
+  { description: "बि.सि.जि.", count_71_72: 18296, count_72_73: 8745, count_73_74: null },
+  { description: "डि.पि.टि.", count_71_72: 14668, count_72_73: 8435, count_73_74: null },
+  { description: "हेपाटाइटिस \"बि\"", count_71_72: 14668, count_72_73: 8435, count_73_74: null },
+  { description: "दादुरा", count_71_72: 16886, count_72_73: 2532, count_73_74: null },
+  { description: "पोलियो ३", count_71_72: 13174, count_72_73: 8320, count_73_74: null },
+  { description: "टि.टि. (गर्भवती महिला)", count_71_72: 15037, count_72_73: 7343, count_73_74: null }
+];
+
+export const nutritionSeed: NutritionStatus[] = [
+  { indicator: "५ वर्ष भन्दा मुनिको वृद्धि अनुगमन (पटक)", count_71_72: null, count_72_73: null, count_73_74: null },
+  { indicator: "गर्भवती महिलाहरुका लागि आइरन चक्की बितरण (जना)", count_71_72: 6485, count_72_73: 3166, count_73_74: 11592 },
+  { indicator: "गर्भवती महिलाहरुले प्राप्त गरेको जुकाको औषधी (जना)", count_71_72: 18081, count_72_73: 5515, count_73_74: 18081 },
+  { indicator: "सुत्केरी भएका महिलाहरुका लागि भिटामिन ए वितरण (जना)", count_71_72: 5375, count_72_73: 2627, count_73_74: 7149 },
+  { indicator: "६ महिना देखि ५ वर्षसम्मका बच्चाहरुलाई खुवाइएको भिटामिन ए (जना)", count_71_72: 34584, count_72_73: 58189, count_73_74: 168840 },
+  { indicator: "१ देखि ५ वर्ष सम्मका बच्चाहरुलाई खुवाएको जुकाको औषधी (जना)", count_71_72: 36485, count_72_73: 58040, count_73_74: 135528 }
+];
+
+export const familyHealthSeed: FamilyHealthStatus[] = [
+  { ward_number: "वडा १", healthy: 1891, common_ill: 4, chronic_ill: 21, not_mentioned: 550, total: 2466 },
+  { ward_number: "वडा २", healthy: 2991, common_ill: 232, chronic_ill: 8, not_mentioned: 9, total: 3240 },
+  { ward_number: "वडा ३", healthy: 3271, common_ill: 87, chronic_ill: 6, not_mentioned: 18, total: 3382 },
+  { ward_number: "वडा ४", healthy: 3079, common_ill: 47, chronic_ill: 71, not_mentioned: 19, total: 3216 },
+  { ward_number: "वडा ५", healthy: 3208, common_ill: 25, chronic_ill: 16, not_mentioned: 110, total: 3359 },
+  { ward_number: "वडा ६", healthy: 2353, common_ill: 19, chronic_ill: 5, not_mentioned: 24, total: 2409 },
+  { ward_number: "वडा ७", healthy: 3916, common_ill: 29, chronic_ill: 11, not_mentioned: 117, total: 4073 },
+  { ward_number: "वडा ८", healthy: 2956, common_ill: 7, chronic_ill: 0, not_mentioned: 4, total: 2967 }
+];

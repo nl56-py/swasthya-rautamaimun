@@ -1,7 +1,9 @@
 import { SitePage } from "@/components/site-chrome";
-import { citizenCharter } from "@/lib/content";
+import { fetchCitizenCharter } from "@/lib/db-fetch";
 
-export default function CitizenCharterPage() {
+export default async function CitizenCharterPage() {
+  const citizenCharter = await fetchCitizenCharter();
+
   return (
     <SitePage title="Citizen Charter">
       <div className="civic-card overflow-x-auto">

@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SitePage } from "@/components/site-chrome";
-import { notices } from "@/lib/content";
+import { fetchNotices } from "@/lib/db-fetch";
 import { findBySlug, slugify } from "@/lib/slug";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const notices = await fetchNotices();
   return notices.map((notice) => ({ slug: slugify(notice.title) }));
 }
 
 export default async function NoticeDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const notices = await fetchNotices();
   const notice = findBySlug(notices, slug);
   if (!notice) notFound();
 
@@ -20,8 +22,20 @@ export default async function NoticeDetailPage({ params }: { params: Promise<{ s
           <span className="rounded bg-[var(--civic-red)] px-2 py-1 font-bold text-white">{notice.category}</span>
           <span className="font-semibold text-slate-500">{notice.date}</span>
         </div>
-        <p className="mt-5 leading-8 text-slate-700">{notice.body}</p>
-        <Link href="/notices" className="mt-6 inline-block rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white">
+        <p className="mt-5 leading-8 text-slate-700 whitespace-pre-wrap">{notice.body}</p>
+        {notice.fileUrl && (
+          <div className="mt-6 border-t border-slate-100 pt-4">
+            <a
+              href={notice.fileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white mr-3"
+            >
+              फाइल डाउनलोड गर्नुहोस्
+            </a>
+          </div>
+        )}
+        <Link href="/notices" className="mt-6 inline-block rounded-md border border-slate-300 px-4 py-2 font-bold text-slate-700">
           सबै सूचना
         </Link>
       </article>

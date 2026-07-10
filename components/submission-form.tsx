@@ -5,11 +5,17 @@ import { FormEvent, useState } from "react";
 export function SubmissionForm({
   endpoint,
   fields,
-  textarea
+  textarea,
+  id,
+  title,
+  icon
 }: {
   endpoint: string;
   fields: [string, string, string, boolean][];
   textarea: [string, string];
+  id?: string;
+  title?: React.ReactNode;
+  icon?: React.ReactNode;
 }) {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +42,13 @@ export function SubmissionForm({
   }
 
   return (
-    <form className="civic-card max-w-3xl p-5" onSubmit={submit}>
+    <form id={id} className="civic-card w-full p-5" onSubmit={submit}>
+      {title && (
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-3 mb-4">
+          {icon && <span className="text-[var(--civic-red)]">{icon}</span>}
+          <h2 className="text-xl font-extrabold text-[var(--civic-navy)]">{title}</h2>
+        </div>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         {fields.map(([name, label, type, required]) => (
           <input key={name} name={name} type={type} className="admin-input" placeholder={label} required={required} />

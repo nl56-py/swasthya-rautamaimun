@@ -1,8 +1,10 @@
 import { Download } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
-import { downloads } from "@/lib/content";
+import { fetchDownloads } from "@/lib/db-fetch";
 
-export default function DownloadsPage() {
+export default async function DownloadsPage() {
+  const downloads = await fetchDownloads();
+
   return (
     <SitePage title="डाउनलोड">
       <div className="civic-card overflow-hidden">

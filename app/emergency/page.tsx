@@ -1,8 +1,10 @@
 import { Bell } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
-import { emergencyContacts } from "@/lib/content";
+import { fetchEmergencyContacts } from "@/lib/db-fetch";
 
-export default function EmergencyPage() {
+export default async function EmergencyPage() {
+  const emergencyContacts = await fetchEmergencyContacts();
+
   return (
     <SitePage title="आकस्मिक सेवा जानकारी">
       <div className="grid gap-4 md:grid-cols-4">

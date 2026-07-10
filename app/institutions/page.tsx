@@ -1,10 +1,12 @@
 import { MapPin } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
-import { institutions } from "@/lib/content";
+import { fetchInstitutions } from "@/lib/db-fetch";
 
-export default function InstitutionsPage() {
+export default async function InstitutionsPage() {
+  const institutions = await fetchInstitutions();
+
   return (
-    <SitePage title="घर नं. र नक्सा / स्वास्थ्य संस्था">
+    <SitePage title="स्वास्थ्य संस्था">
       <div className="grid gap-4 md:grid-cols-3">
         {institutions.map((item) => (
           <div key={item.name} className="civic-card p-5">
@@ -13,7 +15,19 @@ export default function InstitutionsPage() {
             <p className="text-sm font-bold text-slate-500">{item.type}</p>
             <p className="mt-3 text-sm text-slate-600">{item.address}</p>
             <p className="mt-2 text-sm">{item.phone}</p>
-            <p className="mt-2 rounded bg-slate-100 px-3 py-2 text-sm font-bold">{item.serviceTime}</p>
+            {item.serviceTime && (
+              <p className="mt-2 rounded bg-slate-100 px-3 py-2 text-sm font-bold">{item.serviceTime}</p>
+            )}
+            {item.mapUrl && (
+              <a
+                href={item.mapUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-block text-xs font-bold text-[var(--civic-blue)] hover:underline"
+              >
+                गुगल नक्सामा हेर्नुहोस्
+              </a>
+            )}
           </div>
         ))}
       </div>

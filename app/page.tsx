@@ -1,8 +1,5 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
 import {
   Activity,
   Bell,
@@ -12,105 +9,64 @@ import {
   HeartPulse,
   Mail,
   MapPin,
-  Menu,
   Newspaper,
   Phone,
   ShieldAlert,
   Users
 } from "lucide-react";
-import {
-  branchContact,
-  citizenCharter,
-  downloads,
-  emergencyContacts,
-  galleryItems,
-  institutions,
-  notices,
-  programs,
-  reportItems
-} from "@/lib/content";
+import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { SubmissionForm } from "@/components/submission-form";
 import { slugify } from "@/lib/slug";
+import {
+  fetchBranchContact,
+  fetchAboutText,
+  fetchNotices,
+  fetchInstitutions,
+  fetchPrograms,
+  fetchDownloads,
+  fetchReports,
+  fetchEmergencyContacts,
+  fetchGalleryItems,
+  fetchCitizenCharter
+} from "@/lib/db-fetch";
 
-const navItems = [
-  { label: "गृहपृष्ठ", href: "#home" },
-  { label: "परिचय", href: "#about" },
-  { label: "कर्मचारी", href: "#chief" },
-  { label: "स्वास्थ्य संस्था", href: "#institutions" },
-  { label: "सूचना", href: "#notices" },
-  { label: "कार्यक्रम", href: "#programs" },
-  { label: "डाउनलोड", href: "#downloads" },
-  { label: "आकस्मिक सम्पर्क", href: "#emergency" },
-  { label: "गुनासो", href: "#grievance-form" },
-  { label: "अपोइन्टमेन्ट", href: "#appointment-form" },
-  { label: "सम्पर्क", href: "#contact" }
-];
+export default async function HomePage() {
+  const branchContact = await fetchBranchContact();
+  const aboutText = await fetchAboutText();
+  const notices = await fetchNotices();
+  const institutions = await fetchInstitutions();
+  const programs = await fetchPrograms();
+  const downloads = await fetchDownloads();
+  const reports = await fetchReports();
+  const emergencyContacts = await fetchEmergencyContacts();
+  const galleryItems = await fetchGalleryItems();
+  const citizenCharter = await fetchCitizenCharter();
 
-export default function HomePage() {
   return (
     <main>
-      <Header />
-      <NavBar />
-      <Hero />
-      <NoticeNews />
-      <AboutSection />
-      <InstitutionSection />
-      <ProgramsSection />
-      <ReportsDownloads />
+      <SiteHeader />
+      <Hero branchContact={branchContact} emergencyContacts={emergencyContacts} />
+      <NoticeNews notices={notices} />
+      <AboutSection aboutText={aboutText} branchContact={branchContact} />
+      <InstitutionSection institutions={institutions} />
+      <ProgramsSection programs={programs} />
+      <ReportsDownloads reports={reports} downloads={downloads} />
       <FormsSection />
-      <EmergencySection />
-      <GalleryContact />
-      <CitizenCharter />
-      <Footer />
+      <EmergencySection emergencyContacts={emergencyContacts} />
+      <GalleryContact galleryItems={galleryItems} branchContact={branchContact} />
+      <CitizenCharter citizenCharter={citizenCharter} />
+      <SiteFooter />
     </main>
   );
 }
 
-function Header() {
-  return (
-    <header className="identity-header bg-white">
-      <div className="identity-grid">
-        <Image src="/emblem.png" alt="नगरपालिका चिन्ह" width={112} height={98} className="identity-logo" priority />
-        <div className="identity-title">
-          <h1>{branchContact.municipality}</h1>
-          <p className="identity-office">{branchContact.office}</p>
-          <p className="identity-location">{branchContact.provinceLine}</p>
-          <p className="identity-slogan">&quot;{branchContact.slogan}&quot;</p>
-        </div>
-        <div className="identity-flag">
-          <Image src="/np_flag.gif" alt="Nepal flag" width={96} height={116} className="nepal-flag" priority />
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function NavBar() {
-  return (
-    <nav className="sticky top-0 z-30 bg-[var(--civic-blue)] text-white shadow-md">
-      <div className="container-civic flex items-center justify-between">
-        <div className="hidden min-w-0 flex-1 items-center overflow-x-auto md:flex">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="inline-flex h-14 items-center gap-1 whitespace-nowrap px-3 text-[15px] font-bold hover:bg-white/10 xl:px-4"
-            >
-              {item.label}
-            </a>
-          ))}
-        </div>
-        <button className="inline-flex h-14 items-center gap-2 font-bold md:hidden">
-          <Menu size={20} /> मेनु
-        </button>
-        <Link href="/admin/login" className="hidden h-14 items-center bg-[var(--civic-red)] px-4 text-sm font-bold hover:bg-red-700 lg:inline-flex">
-          Admin
-        </Link>
-      </div>
-    </nav>
-  );
-}
-
-function Hero() {
+function Hero({
+  branchContact,
+  emergencyContacts
+}: {
+  branchContact: any;
+  emergencyContacts: any[];
+}) {
   return (
     <section id="home" className="bg-white">
       <div className="container-civic grid gap-6 py-8 lg:grid-cols-[1.4fr_0.8fr]">
@@ -128,8 +84,8 @@ function Hero() {
                 स्वास्थ्य तथ्याङ्क, आकस्मिक सेवा सूचना र नागरिक गुनासो व्यवस्थापनका कार्यहरू सञ्चालन गर्छ।
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <a href="/appointments" className="rounded-md bg-[var(--civic-red)] px-4 py-2 font-bold text-white">Appointment Request</a>
-                <a href="/grievance" className="rounded-md border border-[var(--civic-blue)] px-4 py-2 font-bold text-[var(--civic-blue)]">गुनासो पठाउनुहोस्</a>
+                <Link href="/appointments" className="rounded-md bg-[var(--civic-red)] px-4 py-2 font-bold text-white">Appointment Request</Link>
+                <Link href="/grievance" className="rounded-md border border-[var(--civic-blue)] px-4 py-2 font-bold text-[var(--civic-blue)]">गुनासो पठाउनुहोस्</Link>
               </div>
             </div>
             <div id="chief" className="rounded-md border border-slate-200 bg-slate-50 p-4 text-center">
@@ -153,7 +109,7 @@ function Hero() {
   );
 }
 
-function NoticeNews() {
+function NoticeNews({ notices }: { notices: any[] }) {
   return (
     <section id="notices" className="py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[1fr_0.7fr]">
@@ -188,16 +144,13 @@ function NoticeNews() {
   );
 }
 
-function AboutSection() {
+function AboutSection({ aboutText, branchContact }: { aboutText: string; branchContact: any }) {
   return (
     <section id="about" className="bg-white py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <h2 className="section-title">हाम्रो बारेमा</h2>
-          <p className="mt-5 leading-8 text-slate-700">
-            स्वास्थ्य शाखाले पालिकाभित्र स्वास्थ्य सेवा योजना, स्वास्थ्य संस्था सुपरिवेक्षण, जनस्वास्थ्य अभियान, तथ्याङ्क संकलन
-            तथा प्रतिवेदन, स्वास्थ्य शिक्षा र आकस्मिक स्वास्थ्य समन्वयको काम गर्छ।
-          </p>
+          <p className="mt-5 leading-8 text-slate-700">{aboutText}</p>
         </div>
         <div className="civic-card p-5">
           <h3 className="font-extrabold text-[var(--civic-navy)]">संगठन संरचना</h3>
@@ -217,7 +170,7 @@ function AboutSection() {
   );
 }
 
-function InstitutionSection() {
+function InstitutionSection({ institutions }: { institutions: any[] }) {
   return (
     <section id="institutions" className="py-10">
       <div className="container-civic">
@@ -246,7 +199,7 @@ function InstitutionSection() {
   );
 }
 
-function ProgramsSection() {
+function ProgramsSection({ programs }: { programs: any[] }) {
   return (
     <section id="programs" className="bg-white py-10">
       <div className="container-civic">
@@ -267,18 +220,18 @@ function ProgramsSection() {
   );
 }
 
-function ReportsDownloads() {
+function ReportsDownloads({ reports, downloads }: { reports: any[]; downloads: any[] }) {
   return (
     <section id="reports" className="py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-2">
         <div className="civic-card p-5">
           <h2 className="section-title">तथ्याङ्क तथा प्रतिवेदन</h2>
           <div className="mt-5 grid grid-cols-2 gap-4">
-            {reportItems.map((item) => (
-              <div key={item} className="rounded border border-slate-200 bg-slate-50 p-4">
+            {reports.map((item) => (
+              <Link href="/reports" key={item.title} className="block rounded border border-slate-200 bg-slate-50 p-4 hover:border-[var(--civic-blue)] transition-colors">
                 <Newspaper className="text-[var(--civic-red)]" />
-                <p className="mt-3 font-bold">{item}</p>
-              </div>
+                <p className="mt-3 font-bold">{item.title}</p>
+              </Link>
             ))}
           </div>
         </div>
@@ -286,10 +239,10 @@ function ReportsDownloads() {
           <h2 className="section-title">डाउनलोड केन्द्र</h2>
           <div className="mt-5 space-y-3">
             {downloads.map((item) => (
-              <button key={item.title} className="flex w-full items-center justify-between rounded border border-slate-200 px-3 py-3 text-left font-bold hover:border-[var(--civic-blue)]">
+              <a key={item.title} href={item.fileUrl || "#"} className="flex w-full items-center justify-between rounded border border-slate-200 px-3 py-3 text-left font-bold hover:border-[var(--civic-blue)]">
                 {item.title}
                 <Download size={18} className="text-[var(--civic-blue)]" />
-              </button>
+              </a>
             ))}
           </div>
         </div>
@@ -308,9 +261,9 @@ function FormsSection() {
           title="Online Complaint Form"
           icon={<ShieldAlert />}
           fields={[
-            ["full_name", "नाम", "text"],
-            ["phone", "फोन", "tel"],
-            ["category", "गुनासो विषय", "text"]
+            ["full_name", "नाम", "text", false],
+            ["phone", "फोन", "tel", false],
+            ["category", "गुनासो विषय", "text", false]
           ]}
           textarea={["message", "गुनासो विवरण"]}
         />
@@ -320,10 +273,10 @@ function FormsSection() {
           title="Online Appointment Request"
           icon={<CalendarPlus />}
           fields={[
-            ["full_name", "नाम", "text"],
-            ["phone", "फोन", "tel"],
-            ["service", "सेवा प्रकार", "text"],
-            ["preferred_date", "इच्छित मिति", "date"]
+            ["full_name", "नाम", "text", true],
+            ["phone", "फोन", "tel", true],
+            ["service", "सेवा प्रकार", "text", true],
+            ["preferred_date", "इच्छित मिति", "date", false]
           ]}
           textarea={["message", "थप विवरण"]}
         />
@@ -332,68 +285,7 @@ function FormsSection() {
   );
 }
 
-function SubmissionForm({
-  id,
-  endpoint,
-  title,
-  icon,
-  fields,
-  textarea
-}: {
-  id: string;
-  endpoint: string;
-  title: string;
-  icon: React.ReactNode;
-  fields: [string, string, string][];
-  textarea: [string, string];
-}) {
-  const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setStatus("");
-    const form = event.currentTarget;
-    const payload = Object.fromEntries(new FormData(form).entries());
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    setLoading(false);
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-      setStatus(data?.error ?? "पठाउन सकेन। कृपया फेरि प्रयास गर्नुहोस्।");
-      return;
-    }
-    form.reset();
-    setStatus("तपाईंको विवरण सफलतापूर्वक प्राप्त भयो।");
-  }
-
-  return (
-    <form id={id} className="civic-card p-5" onSubmit={submit}>
-      <div className="flex items-center gap-3">
-        <span className="text-[var(--civic-red)]">{icon}</span>
-        <h2 className="section-title">{title}</h2>
-      </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {fields.map(([name, label, type]) => (
-          <input key={name} name={name} type={type} className="admin-input" placeholder={label} required={["full_name", "phone", "service"].includes(name)} />
-        ))}
-      </div>
-      <textarea name={textarea[0]} className="admin-input mt-3 min-h-28" placeholder={textarea[1]} required />
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button disabled={loading} className="rounded-md bg-[var(--civic-blue)] px-4 py-2 font-bold text-white disabled:opacity-60">
-          {loading ? "Submitting..." : "Submit"}
-        </button>
-        {status && <p className="text-sm font-bold text-slate-600">{status}</p>}
-      </div>
-    </form>
-  );
-}
-
-function EmergencySection() {
+function EmergencySection({ emergencyContacts }: { emergencyContacts: any[] }) {
   return (
     <section id="emergency" className="py-10">
       <div className="container-civic">
@@ -413,7 +305,7 @@ function EmergencySection() {
   );
 }
 
-function GalleryContact() {
+function GalleryContact({ galleryItems, branchContact }: { galleryItems: any[]; branchContact: any }) {
   return (
     <section id="gallery" className="bg-white py-10">
       <div className="container-civic grid gap-6 lg:grid-cols-[1fr_0.8fr]">
@@ -443,7 +335,7 @@ function GalleryContact() {
   );
 }
 
-function CitizenCharter() {
+function CitizenCharter({ citizenCharter }: { citizenCharter: any[] }) {
   return (
     <section className="py-10">
       <div className="container-civic">
@@ -470,22 +362,5 @@ function CitizenCharter() {
         </div>
       </div>
     </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="bg-[var(--civic-navy)] py-8 text-white">
-      <div className="container-civic flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-lg font-extrabold">{branchContact.municipality} - {branchContact.office}</p>
-          <p className="text-sm text-white/75">Vercel + Supabase ready health section portal</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Users size={18} />
-          <Link href="/admin/login" className="font-bold text-[var(--civic-gold)]">Admin Login</Link>
-        </div>
-      </div>
-    </footer>
   );
 }
