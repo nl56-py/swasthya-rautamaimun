@@ -62,7 +62,7 @@ export function NavigationBar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="inline-flex h-14 items-center gap-1 whitespace-nowrap px-3 text-[13px] xl:text-[14px] font-bold hover:bg-white/10 transition-colors"
+                className="inline-flex h-14 items-center gap-1.5 whitespace-nowrap px-3.5 xl:px-4 text-[15px] xl:text-[16px] font-bold hover:bg-white/10 transition-colors"
               >
                 {item.label}
               </Link>
@@ -72,7 +72,7 @@ export function NavigationBar() {
             <div className="relative h-14">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="inline-flex h-14 items-center gap-1.5 whitespace-nowrap px-3 text-[13px] xl:text-[14px] font-bold hover:bg-white/10 focus:outline-none transition-colors cursor-pointer"
+                className="inline-flex h-14 items-center gap-1.5 whitespace-nowrap px-3.5 xl:px-4 text-[15px] xl:text-[16px] font-bold hover:bg-white/10 focus:outline-none transition-colors cursor-pointer"
               >
                 अन्य
                 <ChevronDown size={14} className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
@@ -87,7 +87,7 @@ export function NavigationBar() {
                         key={item.label}
                         href={item.href}
                         onClick={() => setDropdownOpen(false)}
-                        className="block px-4 py-3 text-[13px] xl:text-[14px] font-bold hover:bg-white/10 text-white transition-colors"
+                        className="block px-4 py-3 text-[15px] xl:text-[16px] font-bold hover:bg-white/10 text-white transition-colors"
                       >
                         {item.label}
                       </Link>

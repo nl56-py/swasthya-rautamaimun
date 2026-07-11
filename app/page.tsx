@@ -30,7 +30,8 @@ import {
   fetchGalleryItems,
   fetchCitizenCharter,
   fetchBlogs,
-  fetchVideos
+  fetchVideos,
+  getEmbedUrl
 } from "@/lib/db-fetch";
 
 export default async function HomePage() {
@@ -46,13 +47,20 @@ export default async function HomePage() {
   const blogs = await fetchBlogs();
   const videos = await fetchVideos();
 
+  const resolvedVideos = await Promise.all(
+    videos.map(async (video) => {
+      const embedUrl = await getEmbedUrl(video.youtube_url);
+      return { ...video, embedUrl };
+    })
+  );
+
   return (
     <main>
       <SiteHeader />
       <Hero branchContact={branchContact} emergencyContacts={emergencyContacts} />
       <NoticeNews notices={notices} />
       <BlogsPreviewSection blogs={blogs} />
-      <VideosPreviewSection videos={videos} />
+      <VideosPreviewSection videos={resolvedVideos} />
       <InstitutionSection institutions={institutions} branchContact={branchContact} />
       <ProgramsSection programs={programs} />
       <ReportsDownloads reports={reports} downloads={downloads} />
@@ -204,7 +212,7 @@ function VideosPreviewSection({ videos }: { videos: any[] }) {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
           {featuredVideos.map((video) => {
-            const embedUrl = getEmbedUrl(video.youtube_url);
+            const embedUrl = video.embedUrl;
             const isReel = video.is_reel || video.youtube_url.includes("/share/r/") || video.youtube_url.includes("/reel/") || video.youtube_url.includes("/reels/");
             return (
               <div key={video.id} className={`civic-card overflow-hidden bg-white flex flex-col border border-slate-200 ${isReel ? 'max-w-[280px] mx-auto w-full' : 'w-full'}`}>
@@ -434,27 +442,5 @@ function CitizenCharter({ citizenCharter }: { citizenCharter: any[] }) {
   );
 }
 
-function getEmbedUrl(url: string) {
-  if (!url) return null;
-  if (url.includes("facebook.com") || url.includes("fb.watch") || url.includes("fb.com")) {
-    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&t=0`;
-  }
-  let videoId = "";
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.hostname === "youtu.be") {
-      videoId = urlObj.pathname.slice(1);
-    } else if (urlObj.hostname.includes("youtube.com")) {
-      videoId = urlObj.searchParams.get("v") || "";
-      if (!videoId && urlObj.pathname.startsWith("/embed/")) {
-        videoId = urlObj.pathname.slice(7);
-      }
-    }
-  } catch (e) {
-    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-    if (match) videoId = match[1];
-  }
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-}
 
 

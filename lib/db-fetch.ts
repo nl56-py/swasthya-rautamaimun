@@ -397,3 +397,65 @@ export async function fetchVideos() {
   return [];
 }
 
+const fbUrlCache = new Map<string, string>();
+
+export async function getEmbedUrl(url: string) {
+  if (!url) return null;
+
+  const trimmedUrl = url.trim();
+
+  // Check if it is a Facebook URL
+  if (
+    trimmedUrl.includes("facebook.com") ||
+    trimmedUrl.includes("fb.watch") ||
+    trimmedUrl.includes("fb.com")
+  ) {
+    let targetUrl = trimmedUrl;
+    if (trimmedUrl.includes("/share/")) {
+      if (fbUrlCache.has(trimmedUrl)) {
+        targetUrl = fbUrlCache.get(trimmedUrl)!;
+      } else {
+        try {
+          const res = await fetch(trimmedUrl, {
+            method: "HEAD",
+            redirect: "manual",
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          });
+          const loc = res.headers.get("location");
+          if (loc) {
+            targetUrl = loc;
+            fbUrlCache.set(trimmedUrl, loc);
+          }
+        } catch (e) {
+          console.error("Error resolving Facebook redirect URL:", e);
+        }
+      }
+    }
+    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(targetUrl)}&show_text=0&t=0`;
+  }
+
+  // Handle YouTube
+  let videoId = "";
+  try {
+    const urlObj = new URL(trimmedUrl);
+    if (urlObj.hostname === "youtu.be") {
+      videoId = urlObj.pathname.slice(1);
+    } else if (urlObj.hostname.includes("youtube.com")) {
+      videoId = urlObj.searchParams.get("v") || "";
+      if (!videoId && urlObj.pathname.startsWith("/embed/")) {
+        videoId = urlObj.pathname.slice(7);
+      }
+    }
+  } catch (e) {
+    const match = trimmedUrl.match(
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
+    );
+    if (match) videoId = match[1];
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
+

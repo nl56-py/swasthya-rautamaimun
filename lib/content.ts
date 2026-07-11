@@ -109,9 +109,9 @@ export const institutions: Institution[] = [
 
 export const emergencyContacts: EmergencyContact[] = [
   { title: "स्वास्थ्य शाखा आकस्मिक सम्पर्क", phone: branchContact.phone, details: "स्वास्थ्य इकाई प्रमुख" },
-  { title: "एम्बुलेन्स सेवा", phone: "अद्यावधिक गर्न बाँकी", details: "पालिका क्षेत्रभित्र उपलब्ध एम्बुलेन्स विवरण" },
-  { title: "रक्तसञ्चार सेवा", phone: "अद्यावधिक गर्न बाँकी", details: "नजिकको रक्तसञ्चार/रेफरल सेवा" },
-  { title: "सर्पदंश उपचार केन्द्र", phone: "अद्यावधिक गर्न बाँकी", details: "नजिकको उपचार केन्द्र जानकारी" }
+  { title: "एम्बुलेन्स सेवा", phone: "102", details: "पालिका क्षेत्रभित्र उपलब्ध एम्बुलेन्स विवरण" },
+  { title: "रक्तसञ्चार सेवा", phone: "01-4219597", details: "नेपाल रेडक्रस सोसाइटी" },
+  { title: "सर्पदंश उपचार केन्द्र", phone: "035-520199", details: "उदयपुर जिल्ला अस्पताल" }
 ];
 
 export const downloads: DownloadItem[] = [

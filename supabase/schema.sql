@@ -264,4 +264,14 @@ insert into videos (title, youtube_url, is_reel, sort_order) values
 ('स्वास्थ्य बीमा सम्बन्धि जनचेतनामुलक सन्देश !', 'https://www.facebook.com/share/v/1DLNba9fBP/', false, 2),
 ('सर्पको टोकाइमा पहिलो १ घण्टा नै जीवन-मरणको निर्णायक समय हो।', 'https://www.facebook.com/share/v/1Era4RHRD9/', false, 3),
 ('बर्ड फ्लु (Avian Influenza) बाट कसरी जोगिने?', 'https://www.facebook.com/share/v/1BcMvSYsHT/', false, 4),
-('सचेतना, सरसफाइ र सामुदायिक सहभागितामार्फत डेंगी नियन्त्रण सम्भव छ।', 'https://www.facebook.com/share/v/1Doiczfci2/', false, 5);
+('सचेतना, सरसफाइ र सामुदायिक सहभागितामार्फत डेंगी नियन्त्रण सम्भव छ।', 'https://www.facebook.com/share/v/1Doiczfci2/', false, 5)
+on conflict do nothing;
+
+-- Seed emergency contacts
+truncate table emergency_contacts;
+insert into emergency_contacts (title, phone, details, sort_order) values
+('स्वास्थ्य शाखा आकस्मिक सम्पर्क', '9862998884', 'स्वास्थ्य इकाई प्रमुख', 1),
+('एम्बुलेन्स सेवा', '102', 'पालिका क्षेत्रभित्र उपलब्ध एम्बुलेन्स विवरण', 2),
+('रक्तसञ्चार सेवा', '01-4219597', 'नेपाल रेडक्रस सोसाइटी', 3),
+('सर्पदंश उपचार केन्द्र', '035-520199', 'उदयपुर जिल्ला अस्पताल', 4);
+
