@@ -522,16 +522,25 @@ export async function getEmbedUrl(url: string) {
   try {
     const urlObj = new URL(trimmedUrl);
     if (urlObj.hostname === "youtu.be") {
-      videoId = urlObj.pathname.slice(1);
+      videoId = urlObj.pathname.slice(1).split("/")[0];
     } else if (urlObj.hostname.includes("youtube.com")) {
       videoId = urlObj.searchParams.get("v") || "";
       if (!videoId && urlObj.pathname.startsWith("/embed/")) {
-        videoId = urlObj.pathname.slice(7);
+        videoId = urlObj.pathname.slice(7).split("/")[0];
+      }
+      if (!videoId && urlObj.pathname.startsWith("/shorts/")) {
+        videoId = urlObj.pathname.slice(8).split("/")[0];
+      }
+      if (!videoId && urlObj.pathname.startsWith("/live/")) {
+        videoId = urlObj.pathname.slice(6).split("/")[0];
+      }
+      if (!videoId && urlObj.pathname.startsWith("/watch/")) {
+        videoId = urlObj.pathname.slice(7).split("/")[0];
       }
     }
   } catch (e) {
     const match = trimmedUrl.match(
-      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
+      /(?:youtube\.com\/(?:shorts\/|live\/|watch\/|[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
     );
     if (match) videoId = match[1];
   }
