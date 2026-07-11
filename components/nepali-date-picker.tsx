@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import "@munatech/nepali-datepicker/styles.css";
-
 // Dynamic import to prevent SSR issues (document/window undefined)
 const Picker = dynamic(
   () => import("@munatech/nepali-datepicker").then((mod) => mod.Picker),
