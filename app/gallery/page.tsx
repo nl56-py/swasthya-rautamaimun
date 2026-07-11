@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Metadata } from "next";
 import { SitePage } from "@/components/site-chrome";
 import { fetchGalleryItems } from "@/lib/db-fetch";

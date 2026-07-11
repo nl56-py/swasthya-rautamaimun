@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Metadata } from "next";
 import { Download } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";

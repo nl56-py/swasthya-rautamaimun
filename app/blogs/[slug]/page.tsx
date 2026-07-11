@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";

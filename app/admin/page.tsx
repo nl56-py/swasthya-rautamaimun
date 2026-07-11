@@ -977,7 +977,88 @@ export default function AdminPage() {
     }
   }
 
-  function handleSaveForm(event: FormEvent) {
+  async function saveTabularData(moduleId: ModuleId, updatedItems: any[]) {
+    setStatus("Saving to database...");
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setStatus("त्रुटि: Supabase जडान हुन सकेन।");
+      return;
+    }
+
+    const config = moduleConfigs[moduleId];
+    if (!config.table) {
+      setStatus("This module does not have a database table configured.");
+      return;
+    }
+
+    // Sanitize row data based on fields config to prevent XSS (OWASP A03:2021)
+    const fields = moduleFields[moduleId] || [];
+    const rows = updatedItems.map((row: any) => {
+      const sanitizedRow = { ...row };
+      
+      if (sanitizedRow.metadata && typeof sanitizedRow.metadata === "object") {
+        const sanitizedMeta = { ...sanitizedRow.metadata };
+        for (const k in sanitizedMeta) {
+          if (typeof sanitizedMeta[k] === "string") {
+            sanitizedMeta[k] = sanitizeText(sanitizedMeta[k]);
+          }
+        }
+        sanitizedRow.metadata = sanitizedMeta;
+      }
+      
+      if (typeof sanitizedRow.body === "string") {
+        sanitizedRow.body = sanitizeText(sanitizedRow.body);
+      }
+
+      fields.forEach((field) => {
+        const val = sanitizedRow[field.name];
+        if (typeof val === "string") {
+          if (field.type === "rich-text") {
+            sanitizedRow[field.name] = sanitizeHtml(val);
+          } else {
+            sanitizedRow[field.name] = sanitizeText(val);
+          }
+        }
+      });
+      
+      return sanitizedRow;
+    });
+
+    if (config.table === "site_sections") {
+      const { error } = await supabase.from("site_sections").upsert(rows);
+      setStatus(error ? error.message : `${config.label} saved.`);
+      return;
+    }
+
+    // Tabular table deletion & insertion
+    let deleteQuery = supabase.from(config.table).delete();
+    if (moduleId === "reports") {
+      deleteQuery = deleteQuery.eq("category", "report");
+    } else if (moduleId === "downloads") {
+      deleteQuery = deleteQuery.neq("category", "report");
+    } else {
+      deleteQuery = deleteQuery.neq("id", "00000000-0000-0000-0000-000000000000");
+    }
+
+    const { error: deleteError } = await deleteQuery;
+    if (deleteError) {
+      setStatus(deleteError.message);
+      return;
+    }
+
+    if (rows.length > 0) {
+      const { error: insertError } = await supabase.from(config.table).insert(rows);
+      if (insertError) {
+        setStatus(insertError.message);
+        return;
+      }
+    }
+
+    setStatus(`${config.label} saved to database.`);
+    await loadEditableContent();
+  }
+
+  async function handleSaveForm(event: FormEvent) {
     event.preventDefault();
     const next = [...editingItems];
     if (editingIndex === -1) {
@@ -988,6 +1069,7 @@ export default function AdminPage() {
     updateEditingItems(next);
     setEditingIndex(null);
     setFormState({});
+    await saveTabularData(active, next);
   }
 
   if (checking) {
@@ -1282,9 +1364,10 @@ export default function AdminPage() {
                                     </button>
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={async () => {
                                         const next = editingItems.filter((_, i) => i !== index);
                                         updateEditingItems(next);
+                                        await saveTabularData(active, next);
                                       }}
                                       className="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:underline focus:outline-none"
                                     >

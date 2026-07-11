@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Metadata } from "next";
 import Link from "next/link";
 import { Activity, HeartPulse } from "lucide-react";
