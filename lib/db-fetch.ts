@@ -345,6 +345,38 @@ export async function fetchFamilyHealthStatus() {
   return familyHealthSeed;
 }
 
+export async function fetchFiscalYears() {
+  const supabase = getSupabaseServerClient();
+  const fallback = {
+    year1: "आ.व. ०७१/०७२",
+    year2: "आ.व. ०७२/०७३",
+    year3: "आ.व. ०७३/०७४"
+  };
+
+  if (!supabase) return fallback;
+
+  try {
+    const { data } = await supabase
+      .from("site_sections")
+      .select("metadata")
+      .eq("slug", "fiscal_years")
+      .single();
+
+    if (data?.metadata) {
+      const meta = data.metadata as any;
+      return {
+        year1: meta.year1 || fallback.year1,
+        year2: meta.year2 || fallback.year2,
+        year3: meta.year3 || fallback.year3
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching fiscal years:", error);
+  }
+
+  return fallback;
+}
+
 export async function fetchBlogs() {
   const supabase = getSupabaseServerClient();
   if (!supabase) return [];

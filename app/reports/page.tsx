@@ -5,7 +5,8 @@ import {
   fetchReports,
   fetchVaccinationRecords,
   fetchNutritionStatus,
-  fetchFamilyHealthStatus
+  fetchFamilyHealthStatus,
+  fetchFiscalYears
 } from "@/lib/db-fetch";
 
 export default async function ReportsPage() {
@@ -13,6 +14,7 @@ export default async function ReportsPage() {
   const vaccinationData = await fetchVaccinationRecords();
   const nutritionData = await fetchNutritionStatus();
   const familyHealthData = await fetchFamilyHealthStatus();
+  const fiscalYears = await fetchFiscalYears();
 
   // Compute Vaccination totals
   const vacTotal71_72 = vaccinationData.reduce((acc, row) => acc + (row.count_71_72 || 0), 0);
@@ -50,9 +52,9 @@ export default async function ReportsPage() {
                 <tr className="bg-slate-50 border-b border-slate-200">
                   <th className="p-3 font-bold text-slate-700 w-16 text-center">क्र.सं.</th>
                   <th className="p-3 font-bold text-slate-700">विवरण</th>
-                  <th className="p-3 font-bold text-slate-700 text-right">आ.व. ०७१/०७२ (संख्या)</th>
-                  <th className="p-3 font-bold text-slate-700 text-right">आ.व. ०७२/०७३ (संख्या)</th>
-                  <th className="p-3 font-bold text-slate-700 text-right">आ.व. ०७३/०७४ (संख्या)</th>
+                  <th className="p-3 font-bold text-slate-700 text-right">{fiscalYears.year1} (संख्या)</th>
+                  <th className="p-3 font-bold text-slate-700 text-right">{fiscalYears.year2} (संख्या)</th>
+                  <th className="p-3 font-bold text-slate-700 text-right">{fiscalYears.year3} (संख्या)</th>
                 </tr>
               </thead>
               <tbody>
@@ -95,9 +97,9 @@ export default async function ReportsPage() {
                 <tr className="bg-slate-50 border-b border-slate-200">
                   <th className="p-3 font-bold text-slate-700 w-16 text-center">क्र.सं.</th>
                   <th className="p-3 font-bold text-slate-700">सूचकांकहरु</th>
-                  <th className="p-3 font-bold text-slate-700 text-right">आ.व. २०७१/०७२</th>
-                  <th className="p-3 font-bold text-slate-700 text-right">आ.व. २०७२/०७३</th>
-                  <th className="p-3 font-bold text-slate-700 text-right">आ.व. २०७३/०७४</th>
+                  <th className="p-3 font-bold text-slate-700 text-right">{fiscalYears.year1}</th>
+                  <th className="p-3 font-bold text-slate-700 text-right">{fiscalYears.year2}</th>
+                  <th className="p-3 font-bold text-slate-700 text-right">{fiscalYears.year3}</th>
                 </tr>
               </thead>
               <tbody>

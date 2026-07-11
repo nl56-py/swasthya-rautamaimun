@@ -5,16 +5,16 @@ import Link from "next/link";
 import { Home, Menu, X, ChevronDown } from "lucide-react";
 
 const mainItems = [
-  { label: "कर्मचारी", href: "/staff" },
   { label: "स्वास्थ्य संस्था", href: "/institutions" },
+  { label: "आकस्मिक सम्पर्क", href: "/emergency" },
   { label: "कार्यक्रम", href: "/programs" },
+  { label: "नागरिक बडापत्र", href: "/citizen-charter" },
   { label: "सूचना", href: "/notices" },
   { label: "ब्लग", href: "/blogs" },
   { label: "भिडियो", href: "/videos" },
-  { label: "नागरिक बडापत्र", href: "/citizen-charter" },
-  { label: "आकस्मिक सम्पर्क", href: "/emergency" },
   { label: "अपोइन्टमेन्ट", href: "/appointments" },
-  { label: "सम्पर्क", href: "/contact" }
+  { label: "सम्पर्क", href: "/contact" },
+  { label: "कर्मचारी", href: "/staff" }
 ];
 
 const otherItems = [

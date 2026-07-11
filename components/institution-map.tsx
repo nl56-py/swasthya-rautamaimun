@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { MapPin } from "lucide-react";
 
 type Institution = {
@@ -15,17 +14,9 @@ type Props = {
   branchMapUrl?: string;
 };
 
-export function InstitutionMap({ institutions, branchMapUrl }: Props) {
-  const [selectedMap, setSelectedMap] = useState<string>(branchMapUrl || "");
-  const [selectedName, setSelectedName] = useState<string>("स्वास्थ्य शाखा, रौतामाई गाउँपालिका");
-
-  const mapList = [
-    { name: "स्वास्थ्य शाखा, रौतामाई गाउँपालिका", mapUrl: branchMapUrl || "" },
-    ...institutions.map((inst) => ({
-      name: inst.name,
-      mapUrl: inst.mapUrl || ""
-    }))
-  ];
+export function InstitutionMap({ branchMapUrl }: Props) {
+  const selectedMap = branchMapUrl || "";
+  const selectedName = "स्वास्थ्य शाखा, रौतामाई गाउँपालिका";
 
   return (
     <div className="civic-card mt-6 p-4 lg:p-6 bg-slate-50 border border-slate-200">
@@ -34,27 +25,8 @@ export function InstitutionMap({ institutions, branchMapUrl }: Props) {
           <MapPin className="text-[var(--civic-blue)] shrink-0" size={24} />
           <div>
             <h3 className="font-extrabold text-[var(--civic-navy)] text-base">गुगल स्थान नक्सा (Google Location Map)</h3>
-            <p className="text-xs text-slate-500">नक्सा हेर्न स्वास्थ्य संस्था चयन गर्नुहोस्।</p>
+            <p className="text-xs text-slate-500">स्वास्थ्य शाखा, रौतामाई गाउँपालिकाको गुगल नक्सा स्थान।</p>
           </div>
-        </div>
-        <div>
-          <select
-            value={selectedName}
-            onChange={(e) => {
-              const selected = mapList.find((m) => m.name === e.target.value);
-              if (selected) {
-                setSelectedName(selected.name);
-                setSelectedMap(selected.mapUrl);
-              }
-            }}
-            className="w-full md:w-80 rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[var(--civic-blue)]"
-          >
-            {mapList.map((mapItem) => (
-              <option key={mapItem.name} value={mapItem.name}>
-                {mapItem.name}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 

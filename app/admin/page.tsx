@@ -25,6 +25,7 @@ import {
   Eye,
   Check
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   branchContact,
   citizenCharter,
@@ -40,7 +41,6 @@ import {
   familyHealthSeed
 } from "@/lib/content";
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
-import { cn } from "@/lib/utils";
 
 type ModuleId =
   | "home"
@@ -70,6 +70,7 @@ type Submission = {
   phone: string | null;
   service?: string | null;
   category?: string | null;
+  preferred_date?: string | null;
   message: string | null;
   status: string;
   created_at: string;
@@ -584,8 +585,49 @@ export default function AdminPage() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null); // null = not editing; -1 = adding; >=0 = editing index
   const [formState, setFormState] = useState<Record<string, any>>({});
   const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [fiscalYears, setFiscalYears] = useState({
+    year1: "आ.व. ०७१/०७२",
+    year2: "आ.व. ०७२/०७३",
+    year3: "आ.व. ०७३/०७४"
+  });
 
   const config = moduleConfigs[active];
+
+  const dynamicFields = {
+    ...moduleFields,
+    vaccination: [
+      { name: "description", label: "विवरण (Vaccine Name)", type: "text" },
+      { name: "count_71_72", label: `${fiscalYears.year1} संख्या`, type: "number" },
+      { name: "count_72_73", label: `${fiscalYears.year2} संख्या`, type: "number" },
+      { name: "count_73_74", label: `${fiscalYears.year3} संख्या`, type: "number" }
+    ],
+    nutrition: [
+      { name: "indicator", label: "सूचकांक (Indicator)", type: "text" },
+      { name: "count_71_72", label: `${fiscalYears.year1} संख्या`, type: "number" },
+      { name: "count_72_73", label: `${fiscalYears.year2} संख्या`, type: "number" },
+      { name: "count_73_74", label: `${fiscalYears.year3} संख्या`, type: "number" }
+    ]
+  };
+
+  async function saveFiscalYears() {
+    setStatus("Saving fiscal years...");
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setStatus("त्रुटि: Supabase जडान हुन सकेन।");
+      return;
+    }
+    const { error } = await supabase.from("site_sections").upsert({
+      slug: "fiscal_years",
+      title: "Fiscal Years Config",
+      metadata: fiscalYears
+    }, { onConflict: "slug" });
+    
+    if (error) {
+      setStatus("Fiscal years save failed: " + error.message);
+    } else {
+      setStatus("आर्थिक वर्ष सफलतापूर्वक सुरक्षित गरियो!");
+    }
+  }
 
   useEffect(() => {
     async function boot() {
@@ -633,10 +675,18 @@ export default function AdminPage() {
     const updates: Partial<Record<ModuleId, string>> = {};
     const siteSectionIds: ModuleId[] = ["home", "about", "grievance", "contact", "appointments"];
 
-    const { data: sectionRows } = await supabase.from("site_sections").select("slug, body");
+    const { data: sectionRows } = await supabase.from("site_sections").select("slug, body, metadata");
     sectionRows?.forEach((row) => {
       const id = row.slug as ModuleId;
       if (siteSectionIds.includes(id)) updates[id] = row.body ?? "";
+      if (row.slug === "fiscal_years" && row.metadata) {
+        const meta = row.metadata as any;
+        setFiscalYears({
+          year1: meta.year1 || "आ.व. ०७१/०७२",
+          year2: meta.year2 || "आ.व. ०७२/०७३",
+          year3: meta.year3 || "आ.व. ०७३/०७४"
+        });
+      }
     });
 
     await Promise.all(
@@ -657,7 +707,7 @@ export default function AdminPage() {
 
     const [grievanceResult, appointmentResult] = await Promise.all([
       supabase.from("grievances").select("id, full_name, phone, category, message, status, created_at").order("created_at", { ascending: false }).limit(25),
-      supabase.from("appointments").select("id, full_name, phone, service, message, status, created_at").order("created_at", { ascending: false }).limit(25)
+      supabase.from("appointments").select("id, full_name, phone, service, preferred_date, message, status, created_at").order("created_at", { ascending: false }).limit(25)
     ]);
 
     if (grievanceResult.data) setGrievances(grievanceResult.data);
@@ -961,7 +1011,7 @@ export default function AdminPage() {
                   {/* KEY-VALUE FIELDS EDITOR (Home / Contact) */}
                   {isKeyValueModule && (
                     <div className="grid gap-4 sm:grid-cols-2">
-                      {moduleFields[active].map((field) => {
+                      {dynamicFields[active].map((field) => {
                         const meta = editingItems[0]?.metadata || {};
                         return (
                           <label key={field.name} className="admin-label">
@@ -981,7 +1031,7 @@ export default function AdminPage() {
                   {/* PLAIN TEXT EDITOR (About / Grievance Intro / Appointment Intro) */}
                   {isPlainTextModule && (
                     <div className="grid gap-4">
-                      {moduleFields[active].map((field) => (
+                      {dynamicFields[active].map((field) => (
                         <label key={field.name} className="admin-label">
                           {field.label}
                           <textarea
@@ -999,13 +1049,57 @@ export default function AdminPage() {
                     <div>
                       {editingIndex === null ? (
                         <div className="space-y-4">
+                          {(active === "vaccination" || active === "nutrition") && (
+                            <div className="bg-slate-50 border border-slate-200 rounded-md p-4 mb-4">
+                              <div className="flex items-center justify-between gap-4 mb-3 border-b border-slate-200 pb-2">
+                                <h3 className="font-extrabold text-[var(--civic-navy)] text-xs">आर्थिक वर्षहरू सम्पादन गर्नुहोस् (Edit Fiscal Years)</h3>
+                                <button
+                                  type="button"
+                                  onClick={saveFiscalYears}
+                                  className="rounded bg-[var(--civic-blue)] px-3 py-1 font-bold text-white text-[10px] hover:bg-opacity-90 transition-colors shrink-0 cursor-pointer"
+                                >
+                                  सुरक्षित गर्नुहोस् (Save Years)
+                                </button>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-3">
+                                <label className="admin-label !text-[11px] !mb-0">
+                                  प्रथम वर्ष (Year 1)
+                                  <input
+                                    type="text"
+                                    className="admin-input !py-1 !text-xs font-semibold"
+                                    value={fiscalYears.year1}
+                                    onChange={(e) => setFiscalYears(prev => ({ ...prev, year1: e.target.value }))}
+                                  />
+                                </label>
+                                <label className="admin-label !text-[11px] !mb-0">
+                                  द्वितीय वर्ष (Year 2)
+                                  <input
+                                    type="text"
+                                    className="admin-input !py-1 !text-xs font-semibold"
+                                    value={fiscalYears.year2}
+                                    onChange={(e) => setFiscalYears(prev => ({ ...prev, year2: e.target.value }))}
+                                  />
+                                </label>
+                                <label className="admin-label !text-[11px] !mb-0">
+                                  तृतीय वर्ष (Year 3)
+                                  <input
+                                    type="text"
+                                    className="admin-input !py-1 !text-xs font-semibold"
+                                    value={fiscalYears.year3}
+                                    onChange={(e) => setFiscalYears(prev => ({ ...prev, year3: e.target.value }))}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="flex justify-between items-center">
                             <h3 className="font-bold text-slate-600 text-sm">सूचीबद्ध विवरणहरू (Items List):</h3>
                             <button
                               type="button"
                               onClick={() => {
                                 const defaults = Object.fromEntries(
-                                  moduleFields[active].map((f) => [
+                                  dynamicFields[active].map((f) => [
                                     f.name,
                                     f.type === "boolean" ? false : f.type === "number" ? 0 : ""
                                   ])
@@ -1069,7 +1163,7 @@ export default function AdminPage() {
                             {editingIndex === -1 ? "नयाँ विवरण प्रविष्टि (Add Item)" : "विवरण सम्पादन (Edit Item)"}
                           </h3>
                           <div className="grid gap-4 sm:grid-cols-2 mb-5">
-                            {moduleFields[active].map((field) => {
+                            {dynamicFields[active].map((field) => {
                               if (field.type === "textarea") {
                                 return (
                                   <label key={field.name} className="admin-label sm:col-span-2">
@@ -1181,6 +1275,28 @@ export default function AdminPage() {
                     </div>
                   )}
                 </form>
+
+                {editingIndex === null && active === "grievance" && (
+                  <SubmissionList
+                    title="Submitted Grievances (गुनासोहरू)"
+                    table="grievances"
+                    items={grievances}
+                    empty="No grievances yet."
+                    statuses={["new", "in_review", "resolved", "closed"]}
+                    onStatusChange={updateSubmissionStatus}
+                  />
+                )}
+
+                {editingIndex === null && active === "appointments" && (
+                  <SubmissionList
+                    title="Submitted Appointments (अपोइन्टमेन्टहरू)"
+                    table="appointments"
+                    items={appointments}
+                    empty="No appointment requests yet."
+                    statuses={["requested", "confirmed", "completed", "cancelled"]}
+                    onStatusChange={updateSubmissionStatus}
+                  />
+                )}
               </div>
             )}
           </div>
@@ -1252,29 +1368,54 @@ function SubmissionList({
   statuses: string[];
   onStatusChange: (table: "grievances" | "appointments", id: string, nextStatus: string) => void;
 }) {
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <div className="civic-card p-5 bg-white">
       <h2 className="font-extrabold text-[var(--civic-navy)]">{title}</h2>
       <div className="mt-4 space-y-3">
         {items.length === 0 && <p className="text-sm font-semibold text-slate-500">{empty}</p>}
-        {items.map((item) => (
-          <article key={item.id} className="rounded border border-slate-200 bg-slate-50 p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-extrabold">{item.full_name ?? "नाम उपलब्ध छैन"}</p>
-              <select
-                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700"
-                value={item.status}
-                onChange={(event) => onStatusChange(table, item.id, event.target.value)}
-              >
-                {statuses.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-            </div>
-            <p className="mt-1 text-sm text-slate-600">{item.service ?? item.category ?? "General"} | {item.phone ?? "No phone"}</p>
-            <p className="mt-2 line-clamp-2 text-sm">{item.message}</p>
-          </article>
-        ))}
+        {items.map((item) => {
+          const isExpanded = expandedIds[item.id];
+          return (
+            <article key={item.id} className="rounded border border-slate-200 bg-slate-50 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-extrabold">{item.full_name ?? "नाम उपलब्ध छैन"}</p>
+                <select
+                  className="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700"
+                  value={item.status}
+                  onChange={(event) => onStatusChange(table, item.id, event.target.value)}
+                >
+                  {statuses.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+              <p className="mt-1 text-sm text-slate-600">
+                {item.service ?? item.category ?? "General"} | {item.phone ?? "No phone"}
+                {item.preferred_date && ` | Preferred Date: ${item.preferred_date}`}
+              </p>
+              <div className="mt-2">
+                <p className={cn("text-sm text-slate-700 whitespace-pre-wrap", !isExpanded && "line-clamp-2")}>
+                  {item.message}
+                </p>
+                {item.message && item.message.length > 100 && (
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(item.id)}
+                    className="mt-1 text-xs font-bold text-[var(--civic-blue)] hover:underline"
+                  >
+                    {isExpanded ? "Show Less" : "Read More"}
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

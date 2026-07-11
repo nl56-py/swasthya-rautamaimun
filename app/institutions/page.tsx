@@ -19,14 +19,28 @@ export default async function InstitutionsPage() {
               <p className="mt-2 rounded bg-slate-100 px-3 py-2 text-sm font-bold">{item.serviceTime}</p>
             )}
             {item.mapUrl && (
-              <a
-                href={item.mapUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-block text-xs font-bold text-[var(--civic-blue)] hover:underline"
-              >
-                गुगल नक्सामा हेर्नुहोस्
-              </a>
+              <div className="mt-4 overflow-hidden rounded border border-slate-200">
+                <iframe
+                  src={item.mapUrl}
+                  width="100%"
+                  height="150"
+                  style={{ border: 0 }}
+                  allowFullScreen={false}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title={item.name}
+                ></iframe>
+                <div className="bg-slate-50 p-2 border-t border-slate-200">
+                  <a
+                    href={item.mapUrl.includes("pb=") ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name + ", Rautamai, Udayapur")}` : item.mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded bg-[var(--civic-blue)] px-3 py-2 font-bold text-white text-xs hover:bg-opacity-95 transition-all w-full justify-center"
+                  >
+                    <MapPin size={12} /> दिशा निर्देश (Get Directions)
+                  </a>
+                </div>
+              </div>
             )}
           </div>
         ))}
