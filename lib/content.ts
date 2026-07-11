@@ -49,7 +49,8 @@ export const branchContact = {
   chiefTitle: "स्वास्थ्य इकाई प्रमुख",
   email: "ramnchaudhary989@gmail.com",
   phone: "9862998884",
-  address: "रौतामाई गाउँपालिका, गाउँ कार्यपालिकाको कार्यालय, उदयपुर"
+  address: "रौतामाई गाउँपालिका, गाउँ कार्यपालिकाको कार्यालय, उदयपुर",
+  map_url: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d113824.31828551717!2d86.72146950294902!3d26.934898126135246!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ef692b15e44ec7%3A0xe2128e469c470a7d!2sRautamai!5e0!3m2!1sen!2snp!4v1720612345678!5m2!1sen!2snp"
 };
 
 export const notices: Notice[] = [
