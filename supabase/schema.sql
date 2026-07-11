@@ -258,15 +258,6 @@ insert into blogs (title, slug, content, cover_image_url, published_at) values
 )
 on conflict (slug) do nothing;
 
--- Seed Facebook videos
-insert into videos (title, youtube_url, is_reel, sort_order) values
-('स्वास्थ्य बीमाको दर्ता तथा नवीकरण गर्ने प्रक्रिया !', 'https://www.facebook.com/share/r/198nmT2ANT/', true, 1),
-('स्वास्थ्य बीमा सम्बन्धि जनचेतनामुलक सन्देश !', 'https://www.facebook.com/share/v/1DLNba9fBP/', false, 2),
-('सर्पको टोकाइमा पहिलो १ घण्टा नै जीवन-मरणको निर्णायक समय हो।', 'https://www.facebook.com/share/v/1Era4RHRD9/', false, 3),
-('बर्ड फ्लु (Avian Influenza) बाट कसरी जोगिने?', 'https://www.facebook.com/share/v/1BcMvSYsHT/', false, 4),
-('सचेतना, सरसफाइ र सामुदायिक सहभागितामार्फत डेंगी नियन्त्रण सम्भव छ।', 'https://www.facebook.com/share/v/1Doiczfci2/', false, 5)
-on conflict do nothing;
-
 -- Seed emergency contacts
 truncate table emergency_contacts;
 insert into emergency_contacts (title, phone, details, sort_order) values
