@@ -130,6 +130,31 @@ alter table citizen_charter enable row level security;
 alter table grievances enable row level security;
 alter table appointments enable row level security;
 
+drop policy if exists "public read site sections" on site_sections;
+drop policy if exists "public read staff" on staff;
+drop policy if exists "public read health institutions" on health_institutions;
+drop policy if exists "public read notices" on notices;
+drop policy if exists "public read programs" on programs;
+drop policy if exists "public read downloads" on downloads;
+drop policy if exists "public read emergency contacts" on emergency_contacts;
+drop policy if exists "public read gallery items" on gallery_items;
+drop policy if exists "public read citizen charter" on citizen_charter;
+
+drop policy if exists "public create grievances" on grievances;
+drop policy if exists "public create appointments" on appointments;
+
+drop policy if exists "authenticated manage site sections" on site_sections;
+drop policy if exists "authenticated manage staff" on staff;
+drop policy if exists "authenticated manage health institutions" on health_institutions;
+drop policy if exists "authenticated manage notices" on notices;
+drop policy if exists "authenticated manage programs" on programs;
+drop policy if exists "authenticated manage downloads" on downloads;
+drop policy if exists "authenticated manage emergency contacts" on emergency_contacts;
+drop policy if exists "authenticated manage gallery items" on gallery_items;
+drop policy if exists "authenticated manage citizen charter" on citizen_charter;
+drop policy if exists "authenticated manage grievances" on grievances;
+drop policy if exists "authenticated manage appointments" on appointments;
+
 create policy "public read site sections" on site_sections for select using (true);
 create policy "public read staff" on staff for select using (true);
 create policy "public read health institutions" on health_institutions for select using (true);
@@ -177,6 +202,11 @@ create table if not exists videos (
 
 alter table blogs enable row level security;
 alter table videos enable row level security;
+
+drop policy if exists "public read blogs" on blogs;
+drop policy if exists "public read videos" on videos;
+drop policy if exists "authenticated manage blogs" on blogs;
+drop policy if exists "authenticated manage videos" on videos;
 
 create policy "public read blogs" on blogs for select using (true);
 create policy "public read videos" on videos for select using (true);
