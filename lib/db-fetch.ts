@@ -400,6 +400,27 @@ export async function fetchBlogs() {
   return [];
 }
 
+export async function fetchBlogsPaginated(page: number = 1, pageSize: number = 6) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return { data: [], count: 0 };
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  try {
+    const { data, count } = await supabase
+      .from("blogs")
+      .select("id, title, slug, content, cover_image_url, published_at", { count: "exact" })
+      .order("published_at", { ascending: false })
+      .range(from, to);
+
+    return { data: data || [], count: count || 0 };
+  } catch (error) {
+    console.error("Error fetching paginated blogs:", error);
+  }
+  return { data: [], count: 0 };
+}
+
 export async function fetchBlogBySlug(slug: string) {
   const supabase = getSupabaseServerClient();
   if (!supabase) return null;
@@ -433,6 +454,27 @@ export async function fetchVideos() {
     console.error("Error fetching videos:", error);
   }
   return [];
+}
+
+export async function fetchVideosPaginated(page: number = 1, pageSize: number = 6) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return { data: [], count: 0 };
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  try {
+    const { data, count } = await supabase
+      .from("videos")
+      .select("id, title, youtube_url, is_reel, sort_order", { count: "exact" })
+      .order("sort_order", { ascending: true })
+      .range(from, to);
+
+    return { data: data || [], count: count || 0 };
+  } catch (error) {
+    console.error("Error fetching paginated videos:", error);
+  }
+  return { data: [], count: 0 };
 }
 
 const fbUrlCache = new Map<string, string>();

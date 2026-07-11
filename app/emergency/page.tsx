@@ -1,6 +1,13 @@
+import { Metadata } from "next";
 import { Bell } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { fetchEmergencyContacts } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "आकस्मिक सेवा",
+  description: "रौतामाई गाउँपालिका अन्तर्गतका आकस्मिक सम्पर्क नम्बरहरू — एम्बुलेन्स, अस्पताल, प्रहरी, दमकल आदि।",
+  keywords: ["आकस्मिक सेवा", "Emergency", "Ambulance", "Emergency Contacts Rautamai", "आपतकालीन सम्पर्क"]
+};
 
 export default async function EmergencyPage() {
   const emergencyContacts = await fetchEmergencyContacts();

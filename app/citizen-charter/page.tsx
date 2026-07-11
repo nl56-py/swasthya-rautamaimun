@@ -1,5 +1,12 @@
+import { Metadata } from "next";
 import { SitePage } from "@/components/site-chrome";
 import { fetchCitizenCharter } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "नागरिक बडापत्र",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाको नागरिक बडापत्र — सेवाहरू, शुल्कहरू, समय र जिम्मेवार कर्मचारीहरूको विवरण।",
+  keywords: ["नागरिक बडापत्र", "Citizen Charter", "Health Services", "Rautamai Municipality"]
+};
 
 export default async function CitizenCharterPage() {
   const citizenCharter = await fetchCitizenCharter();

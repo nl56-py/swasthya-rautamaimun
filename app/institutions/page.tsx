@@ -1,6 +1,13 @@
+import { Metadata } from "next";
 import { MapPin } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { fetchInstitutions } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "स्वास्थ्य संस्थाहरू",
+  description: "रौतामाई गाउँपालिका अन्तर्गतका स्वास्थ्य चौकीहरू, प्राथमिक स्वास्थ्य केन्द्रहरू र अन्य सेवा प्रदायक संस्थाहरूको सूची।",
+  keywords: ["स्वास्थ्य संस्था", "Health Institutions", "Health Post", "Rautamai", "स्वास्थ्य चौकी"]
+};
 
 export default async function InstitutionsPage() {
   const institutions = await fetchInstitutions();

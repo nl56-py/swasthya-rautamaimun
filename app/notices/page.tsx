@@ -1,8 +1,15 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { fetchNotices } from "@/lib/db-fetch";
 import { slugify } from "@/lib/slug";
+
+export const metadata: Metadata = {
+  title: "सूचनाहरू",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाबाट प्रकाशित भर्खरैका सूचनाहरू तथा जानकारीहरू।",
+  keywords: ["सूचना", "Notices", "Health Notices Rautamai", "स्वास्थ्य सूचना"]
+};
 
 export default async function NoticesPage() {
   const notices = await fetchNotices();

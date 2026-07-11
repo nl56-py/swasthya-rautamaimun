@@ -593,6 +593,13 @@ export default function AdminPage() {
   const [grievances, setGrievances] = useState<Submission[]>([]);
   const [appointments, setAppointments] = useState<Submission[]>([]);
 
+  const [appointmentsPage, setAppointmentsPage] = useState(1);
+  const [appointmentsCount, setAppointmentsCount] = useState(0);
+  const [grievancesPage, setGrievancesPage] = useState(1);
+  const [grievancesCount, setGrievancesCount] = useState(0);
+  const [totalAppointments, setTotalAppointments] = useState(0);
+  const [totalGrievances, setTotalGrievances] = useState(0);
+
   // Visual Editor State
   const [editingItems, setEditingItems] = useState<any[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null); // null = not editing; -1 = adding; >=0 = editing index
@@ -714,10 +721,10 @@ export default function AdminPage() {
       notices: rowCount(moduleText.notices),
       institutions: rowCount(moduleText.institutions),
       programs: rowCount(moduleText.programs),
-      grievances: grievances.length,
-      appointments: appointments.length
+      grievances: totalGrievances,
+      appointments: totalAppointments
     }),
-    [appointments.length, grievances.length, moduleText]
+    [totalAppointments, totalGrievances, moduleText]
   );
 
   async function loadEditableContent() {
@@ -753,18 +760,66 @@ export default function AdminPage() {
     setModuleText((current) => ({ ...current, ...updates }));
   }
 
+  const ADMIN_PAGE_SIZE = 10;
+
   async function loadSubmissions() {
     const supabase = getSupabaseClient();
     if (!supabase) return;
 
-    const [grievanceResult, appointmentResult] = await Promise.all([
-      supabase.from("grievances").select("id, full_name, phone, category, message, status, created_at").order("created_at", { ascending: false }).limit(25),
-      supabase.from("appointments").select("id, full_name, phone, service, preferred_date, message, status, created_at").order("created_at", { ascending: false }).limit(25)
-    ]);
+    if (active === "home") {
+      const [grievanceResult, appointmentResult, grievanceCountRes, appointmentCountRes] = await Promise.all([
+        supabase.from("grievances").select("id, full_name, phone, category, message, status, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("appointments").select("id, full_name, phone, service, preferred_date, message, status, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("grievances").select("id", { count: "exact", head: true }),
+        supabase.from("appointments").select("id", { count: "exact", head: true })
+      ]);
 
-    if (grievanceResult.data) setGrievances(grievanceResult.data);
-    if (appointmentResult.data) setAppointments(appointmentResult.data);
+      if (grievanceResult.data) setGrievances(grievanceResult.data);
+      if (appointmentResult.data) setAppointments(appointmentResult.data);
+      if (grievanceCountRes.count !== null && grievanceCountRes.count !== undefined) {
+        setTotalGrievances(grievanceCountRes.count);
+      }
+      if (appointmentCountRes.count !== null && appointmentCountRes.count !== undefined) {
+        setTotalAppointments(appointmentCountRes.count);
+      }
+    } else if (active === "appointments") {
+      const from = (appointmentsPage - 1) * ADMIN_PAGE_SIZE;
+      const to = from + ADMIN_PAGE_SIZE - 1;
+
+      const { data, count } = await supabase
+        .from("appointments")
+        .select("id, full_name, phone, service, preferred_date, message, status, created_at", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (data) setAppointments(data);
+      if (count !== null && count !== undefined) {
+        setAppointmentsCount(count);
+        setTotalAppointments(count);
+      }
+    } else if (active === "grievance") {
+      const from = (grievancesPage - 1) * ADMIN_PAGE_SIZE;
+      const to = from + ADMIN_PAGE_SIZE - 1;
+
+      const { data, count } = await supabase
+        .from("grievances")
+        .select("id, full_name, phone, category, message, status, created_at", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (data) setGrievances(data);
+      if (count !== null && count !== undefined) {
+        setGrievancesCount(count);
+        setTotalGrievances(count);
+      }
+    }
   }
+
+  useEffect(() => {
+    if (!checking) {
+      loadSubmissions();
+    }
+  }, [active, appointmentsPage, grievancesPage, checking]);
 
   function updateEditingItems(newItems: any[]) {
     setEditingItems(newItems);
@@ -1369,6 +1424,10 @@ export default function AdminPage() {
                     empty="No grievances yet."
                     statuses={["new", "in_review", "resolved", "closed"]}
                     onStatusChange={updateSubmissionStatus}
+                    page={grievancesPage}
+                    count={grievancesCount}
+                    pageSize={ADMIN_PAGE_SIZE}
+                    onPageChange={setGrievancesPage}
                   />
                 )}
 
@@ -1380,6 +1439,10 @@ export default function AdminPage() {
                     empty="No appointment requests yet."
                     statuses={["requested", "confirmed", "completed", "cancelled"]}
                     onStatusChange={updateSubmissionStatus}
+                    page={appointmentsPage}
+                    count={appointmentsCount}
+                    pageSize={ADMIN_PAGE_SIZE}
+                    onPageChange={setAppointmentsPage}
                   />
                 )}
               </div>
@@ -1444,7 +1507,11 @@ function SubmissionList({
   items,
   empty,
   statuses,
-  onStatusChange
+  onStatusChange,
+  page,
+  count,
+  pageSize,
+  onPageChange
 }: {
   title: string;
   table: "grievances" | "appointments";
@@ -1452,12 +1519,19 @@ function SubmissionList({
   empty: string;
   statuses: string[];
   onStatusChange: (table: "grievances" | "appointments", id: string, nextStatus: string) => void;
+  page?: number;
+  count?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 }) {
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const hasPagination = page !== undefined && count !== undefined && pageSize !== undefined && onPageChange !== undefined;
+  const totalPages = hasPagination ? Math.ceil(count / pageSize) : 0;
 
   return (
     <div className="civic-card p-5 bg-white">
@@ -1508,6 +1582,34 @@ function SubmissionList({
           );
         })}
       </div>
+      {hasPagination && totalPages > 1 && (
+        <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 select-none">
+          <p className="text-xs text-slate-500 font-semibold">
+            Showing {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, count)} of {count}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+              className="rounded border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Prev
+            </button>
+            <span className="text-xs font-bold text-slate-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => onPageChange(page + 1)}
+              className="rounded border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

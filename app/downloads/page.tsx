@@ -1,6 +1,13 @@
+import { Metadata } from "next";
 import { Download } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { fetchDownloads } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "डाउनलोड",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाबाट डाउनलोड गर्न सकिने फारम, फाइल र कागजातहरू।",
+  keywords: ["डाउनलोड", "Downloads", "Health Forms", "Rautamai Downloads"]
+};
 
 export default async function DownloadsPage() {
   const downloads = await fetchDownloads();

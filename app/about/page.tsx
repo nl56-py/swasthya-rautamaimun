@@ -1,5 +1,12 @@
+import { Metadata } from "next";
 import { SitePage } from "@/components/site-chrome";
 import { fetchAboutText } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "परिचय",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाको परिचय, उद्देश्य, इतिहास र संरचना।",
+  keywords: ["रौतामाई परिचय", "About Rautamai", "Health Branch Introduction"]
+};
 
 export default async function AboutPage() {
   const aboutText = await fetchAboutText();

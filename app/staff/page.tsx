@@ -1,7 +1,14 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import { Mail, Phone } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { fetchStaff } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "कर्मचारी",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाका कर्मचारीहरूको सूची तथा सम्पर्क विवरण।",
+  keywords: ["कर्मचारी", "Staff", "Health Staff Rautamai", "स्वास्थ्य कर्मचारी"]
+};
 
 export default async function StaffPage() {
   const staffList = await fetchStaff();

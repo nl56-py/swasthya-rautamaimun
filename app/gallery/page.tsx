@@ -1,5 +1,12 @@
+import { Metadata } from "next";
 import { SitePage } from "@/components/site-chrome";
 import { fetchGalleryItems } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "ग्यालरी",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाका कार्यक्रम र गतिविधिहरूका तस्बिरहरू।",
+  keywords: ["ग्यालरी", "Gallery", "Health Activities Photos", "Rautamai Gallery"]
+};
 
 export default async function GalleryPage() {
   const galleryItems = await fetchGalleryItems();

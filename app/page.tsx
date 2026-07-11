@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -33,6 +34,16 @@ import {
   fetchVideos,
   getEmbedUrl
 } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "गृहपृष्ठ - स्वास्थ्य शाखा | रौतामाई गाउँपालिका",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाको आधिकारिक वेबसाइट — स्वास्थ्य सेवा, सूचना, संस्थाहरू, अपोइन्टमेन्ट, गुनासो, नागरिक बडापत्र, आकस्मिक सम्पर्क सबै एकै ठाउँमा।",
+  keywords: [
+    "रौतामाई गाउँपालिका", "स्वास्थ्य शाखा", "Rautamai Rural Municipality", "Health Branch",
+    "उदयपुर", "Udayapur", "स्वास्थ्य सेवा", "नेपाल सरकार", "online appointment", "gunaso",
+    "grievance", "public health", "community health"
+  ]
+};
 
 export default async function HomePage() {
   const branchContact = await fetchBranchContact();

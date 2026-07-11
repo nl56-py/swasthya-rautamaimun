@@ -1,8 +1,15 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { Activity, HeartPulse } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { fetchPrograms } from "@/lib/db-fetch";
 import { slugify } from "@/lib/slug";
+
+export const metadata: Metadata = {
+  title: "स्वास्थ्य कार्यक्रमहरू",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाद्वारा सञ्चालित स्वास्थ्य कार्यक्रम र योजनाहरू।",
+  keywords: ["स्वास्थ्य कार्यक्रम", "Health Programs", "Programs Rautamai", "कार्यक्रम"]
+};
 
 export default async function ProgramsPage() {
   const programs = await fetchPrograms();

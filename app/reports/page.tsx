@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { FileText } from "lucide-react";
 import { SitePage } from "@/components/site-chrome";
 import { ReportList } from "@/components/report-list";
@@ -8,6 +9,12 @@ import {
   fetchFamilyHealthStatus,
   fetchFiscalYears
 } from "@/lib/db-fetch";
+
+export const metadata: Metadata = {
+  title: "प्रतिवेदनहरू",
+  description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाका वार्षिक प्रतिवेदन, खोप तथ्यांक, पोषण स्थिति र परिवार स्वास्थ्य तथ्यांकहरू।",
+  keywords: ["प्रतिवेदन", "Reports", "Health Reports Rautamai", "Vaccination Data", "खोप तथ्यांक"]
+};
 
 export default async function ReportsPage() {
   const reports = await fetchReports();
