@@ -18,7 +18,10 @@ export async function fetchBranchContact() {
   const supabase = getSupabaseServerClient();
   let contact = { ...branchContact };
 
-  if (!supabase) return contact;
+  if (!supabase) {
+    if (contact.map_url) contact.map_url = getMapEmbedUrl(contact.map_url);
+    return contact;
+  }
 
   try {
     const { data: sections } = await supabase
@@ -36,6 +39,9 @@ export async function fetchBranchContact() {
     console.error("Error fetching branch contact:", error);
   }
 
+  if (contact.map_url) {
+    contact.map_url = getMapEmbedUrl(contact.map_url);
+  }
   return contact;
 }
 
@@ -105,7 +111,7 @@ export async function fetchInstitutions() {
         address: item.address || "",
         phone: item.phone || "",
         serviceTime: item.service_time || "",
-        mapUrl: item.map_url || ""
+        mapUrl: getMapEmbedUrl(item.map_url)
       }));
     }
   } catch (error) {
@@ -488,6 +494,18 @@ export async function getEmbedUrl(url: string) {
     if (match) videoId = match[1];
   }
   return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
+export function getMapEmbedUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("<iframe")) {
+    const match = trimmed.match(/src="([^"]+)"/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return trimmed;
 }
 
 
