@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { NepaliDatePicker } from "@/components/nepali-date-picker";
 
 export function SubmissionForm({
   endpoint,
@@ -50,9 +51,28 @@ export function SubmissionForm({
         </div>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
-        {fields.map(([name, label, type, required]) => (
-          <input key={name} name={name} type={type} className="admin-input" placeholder={label} required={required} />
-        ))}
+        {fields.map(([name, label, type, required]) => {
+          if (type === "nepali-date") {
+            return (
+              <NepaliDatePicker
+                key={name}
+                name={name}
+                placeholder={label}
+                required={required}
+              />
+            );
+          }
+          return (
+            <input
+              key={name}
+              name={name}
+              type={type}
+              className="admin-input"
+              placeholder={label}
+              required={required}
+            />
+          );
+        })}
       </div>
       <textarea name={textarea[0]} className="admin-input mt-3 min-h-32" placeholder={textarea[1]} required />
       <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -352,7 +352,7 @@ function FormsSection() {
             ["full_name", "नाम", "text", true],
             ["phone", "फोन", "tel", true],
             ["service", "सेवा प्रकार", "text", true],
-            ["preferred_date", "इच्छित मिति", "date", false]
+            ["preferred_date", "इच्छित मिति", "nepali-date", false]
           ]}
           textarea={["message", "थप विवरण"]}
         />

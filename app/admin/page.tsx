@@ -41,6 +41,9 @@ import {
   familyHealthSeed
 } from "@/lib/content";
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { sanitizeHtml, sanitizeText } from "@/lib/sanitize";
+// @ts-ignore
+import { adToBs } from "@sbmdkl/nepali-date-converter";
 
 type ModuleId =
   | "home"
@@ -550,11 +553,21 @@ const moduleFields: Record<ModuleId, FieldConfig[]> = {
 };
 
 async function handleFileUpload(file: File): Promise<string | null> {
+  const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "docx", "xlsx", "txt"];
+  const fileExt = file.name.split(".").pop()?.toLowerCase();
+  if (!fileExt || !allowedExtensions.includes(fileExt)) {
+    throw new Error(`त्रुटि: अनुमति नभएको फाइल प्रकार। स्वीकृत फाइलहरू: ${allowedExtensions.join(", ")}`);
+  }
+
+  const maxSize = 20 * 1024 * 1024; // 20MB
+  if (file.size > maxSize) {
+    throw new Error("त्रुटि: फाइलको आकार २०MB भन्दा कम हुनुपर्छ।");
+  }
+
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
   try {
-    const fileExt = file.name.split(".").pop();
     const fileName = `${Math.random().toString(36).slice(2)}-${Date.now()}.${fileExt}`;
     const { data, error } = await supabase.storage.from("uploads").upload(fileName, file);
     if (error) {
@@ -616,10 +629,15 @@ export default function AdminPage() {
       setStatus("त्रुटि: Supabase जडान हुन सकेन।");
       return;
     }
+    const sanitizedYears = {
+      year1: sanitizeText(fiscalYears.year1),
+      year2: sanitizeText(fiscalYears.year2),
+      year3: sanitizeText(fiscalYears.year3)
+    };
     const { error } = await supabase.from("site_sections").upsert({
       slug: "fiscal_years",
       title: "Fiscal Years Config",
-      metadata: fiscalYears
+      metadata: sanitizedYears
     }, { onConflict: "slug" });
     
     if (error) {
@@ -647,6 +665,40 @@ export default function AdminPage() {
       setChecking(false);
     }
     boot();
+  }, [router]);
+
+  // Session inactivity timeout (OWASP A07:2021)
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+
+    async function handleLogout() {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      localStorage.setItem("admin_logout_reason", "session_timeout");
+      router.push("/admin/login");
+    }
+
+    function resetTimer() {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
+    }
+
+    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
+    events.forEach((event) => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((event) => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
   }, [router]);
 
   // Sync editingItems when moduleText or active changes
@@ -758,7 +810,40 @@ export default function AdminPage() {
       return;
     }
 
-    const rows = config.parse(moduleText[active]).filter((row) => Object.values(row).some((value) => value !== "" && value !== null));
+    const rawRows = config.parse(moduleText[active]).filter((row) => Object.values(row).some((value) => value !== "" && value !== null));
+    
+    // Sanitize row data based on fields config to prevent XSS (OWASP A03:2021)
+    const fields = moduleFields[active] || [];
+    const rows = rawRows.map((row: any) => {
+      const sanitizedRow = { ...row };
+      
+      if (sanitizedRow.metadata && typeof sanitizedRow.metadata === "object") {
+        const sanitizedMeta = { ...sanitizedRow.metadata };
+        for (const k in sanitizedMeta) {
+          if (typeof sanitizedMeta[k] === "string") {
+            sanitizedMeta[k] = sanitizeText(sanitizedMeta[k]);
+          }
+        }
+        sanitizedRow.metadata = sanitizedMeta;
+      }
+      
+      if (typeof sanitizedRow.body === "string") {
+        sanitizedRow.body = sanitizeText(sanitizedRow.body);
+      }
+
+      fields.forEach((field) => {
+        const val = sanitizedRow[field.name];
+        if (typeof val === "string") {
+          if (field.type === "rich-text") {
+            sanitizedRow[field.name] = sanitizeHtml(val);
+          } else {
+            sanitizedRow[field.name] = sanitizeText(val);
+          }
+        }
+      });
+      
+      return sanitizedRow;
+    });
     if (!config.table) {
       setStatus("This module does not have a database table configured.");
       return;
@@ -1397,7 +1482,13 @@ function SubmissionList({
               </div>
               <p className="mt-1 text-sm text-slate-600">
                 {item.service ?? item.category ?? "General"} | {item.phone ?? "No phone"}
-                {item.preferred_date && ` | Preferred Date: ${item.preferred_date}`}
+                {item.preferred_date && (() => {
+                  try {
+                    return ` | Preferred Date: ${adToBs(item.preferred_date)} BS`;
+                  } catch (e) {
+                    return ` | Preferred Date: ${item.preferred_date}`;
+                  }
+                })()}
               </p>
               <div className="mt-2">
                 <p className={cn("text-sm text-slate-700 whitespace-pre-wrap", !isExpanded && "line-clamp-2")}>
@@ -1433,8 +1524,18 @@ function PasswordChangeForm() {
       setStatus("त्रुटि: पासवर्डहरू मेल खाएनन् (Passwords do not match).");
       return;
     }
-    if (password.length < 6) {
-      setStatus("त्रुटि: पासवर्ड कम्तिमा ६ अक्षरको हुनुपर्छ (Password must be at least 6 characters).");
+
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':",./\\<>?`~]/.test(password);
+
+    if (password.length < 10) {
+      setStatus("त्रुटि: पासवर्ड कम्तिमा १० अक्षरको हुनुपर्छ (Password must be at least 10 characters).");
+      return;
+    }
+    if (!hasUppercase || !hasLowercase || !hasDigit || !hasSpecial) {
+      setStatus("त्रुटि: पासवर्डमा कम्तिमा एउटा ठूलो अक्षर (A-Z), सानो अक्षर (a-z), अंक (0-9) र विशेष चिन्ह (!@#...) हुनुपर्छ।");
       return;
     }
 
