@@ -49,10 +49,18 @@ export default async function VideosPage() {
                     </div>
                   )}
                 </div>
-                <div className="p-4 flex-1 flex flex-col justify-center border-t border-slate-100">
+                <div className="p-4 flex-1 flex flex-col justify-between border-t border-slate-100 gap-3">
                   <h2 className="text-lg font-extrabold text-[var(--civic-navy)] leading-snug line-clamp-2">
                     {video.title}
                   </h2>
+                  <a
+                    href={video.youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--civic-blue)] hover:text-[var(--civic-red)] transition-colors self-start mt-1"
+                  >
+                    फेसबुकमा हेर्नुहोस् &rarr;
+                  </a>
                 </div>
               </div>
             );

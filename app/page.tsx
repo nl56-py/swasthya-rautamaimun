@@ -230,10 +230,18 @@ function VideosPreviewSection({ videos }: { videos: any[] }) {
                     <div className="grid h-full place-items-center text-xs text-slate-400">Preview</div>
                   )}
                 </div>
-                <div className="p-4 flex-1 flex flex-col justify-center border-t border-slate-100">
+                <div className="p-4 flex-1 flex flex-col justify-between border-t border-slate-100 gap-2">
                   <h3 className="font-extrabold text-[var(--civic-navy)] leading-snug line-clamp-2 text-xs">
                     {video.title}
                   </h3>
+                  <a
+                    href={video.youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--civic-blue)] hover:text-[var(--civic-red)] transition-colors self-start"
+                  >
+                    फेसबुकमा हेर्नुहोस् &rarr;
+                  </a>
                 </div>
               </div>
             );
