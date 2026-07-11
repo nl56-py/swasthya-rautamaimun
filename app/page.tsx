@@ -168,10 +168,10 @@ function BlogsPreviewSection({ blogs }: { blogs: any[] }) {
             सबै ब्लगहरू हेर्नुहोस् &rarr;
           </Link>
         </div>
-        {/* Horizontal scroll on desktop, vertical list on mobile */}
-        <div className="flex flex-col md:flex-row gap-6 md:overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300">
+        {/* Scrollable vertical list on mobile, horizontal scroll on desktop */}
+        <div className="flex flex-col max-h-[480px] overflow-y-auto pr-2 md:pr-0 md:max-h-none md:overflow-y-visible md:flex-row gap-6 md:overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300">
           {blogs.map((blog) => (
-            <article key={blog.id} className="civic-card bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full md:w-[320px] md:shrink-0 border border-slate-200">
+            <article key={blog.id} className="civic-card bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full md:w-[320px] shrink-0 border border-slate-200">
               {blog.cover_image_url && (
                 <div className="relative aspect-[16/10] bg-slate-100 shrink-0">
                   <img src={blog.cover_image_url} alt={blog.title} className="h-full w-full object-cover" />
@@ -210,7 +210,8 @@ function VideosPreviewSection({ videos }: { videos: any[] }) {
             सबै भिडियोहरू हेर्नुहोस् &rarr;
           </Link>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
+        {/* Scrollable vertical grid on mobile, standard grid on desktop */}
+        <div className="grid gap-6 max-h-[480px] overflow-y-auto pr-2 md:pr-0 md:max-h-none md:overflow-y-visible md:grid-cols-2 lg:grid-cols-3 items-start scrollbar-thin scrollbar-thumb-slate-300">
           {featuredVideos.map((video) => {
             const embedUrl = video.embedUrl;
             const isReel = video.is_reel || video.youtube_url.includes("/share/r/") || video.youtube_url.includes("/reel/") || video.youtube_url.includes("/reels/");
