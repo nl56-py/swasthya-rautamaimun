@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://swasthya.rautamai.gov.np"),
+  metadataBase: new URL("https://www.swasthyarautmai.com"),
   title: {
     default: "स्वास्थ्य शाखा | रौतामाई गाउँपालिका",
     template: "%s | रौतामाई गाउँपालिका"
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "स्वास्थ्य शाखा | रौतामाई गाउँपालिका",
     description: "रौतामाई गाउँपालिका स्वास्थ्य शाखाको आधिकारिक अनलाइन सेवा पोर्टल।",
-    url: "https://swasthya.rautamai.gov.np",
+    url: "https://www.swasthyarautmai.com",
     siteName: "रौतामाई गाउँपालिका स्वास्थ्य शाखा",
     locale: "ne_NP",
     type: "website",
